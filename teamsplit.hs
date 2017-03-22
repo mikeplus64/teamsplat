@@ -1,20 +1,3 @@
-{- stack runghc
-     --package conduit-combinators
-     --package servant-server
-     --package servant-js
-     --package servant
-     --package text
-     --package mtl
-     --package lens
-     --package esqueleto
-     --package persistent
-     --package persistent-template
-     --package persistent-sqlite
-     --package containers
-     --package unordered-containers
-     --resolver lts-8.5
-     --install-ghc -}
-
 -- elo db api by mmike
 --
 -- generates a javascript API given a specific url prefix
@@ -190,7 +173,6 @@ type MainApi =
 
 type Api =
   "api.js" :> Get '[PlainText] Text
-  :<|> 
   :<|> MainApi
 
 api :: Proxy Api

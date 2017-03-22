@@ -1,5 +1,24 @@
 dependencies:
 - base
+- aeson
+- conduit-combinators
+- containers
+- esqueleto
+- text
+- time
+- lens
+- mtl
+- monad-logger
+- persistent
+- persistent-template
+- persistent-sqlite
+- resourcet
+- servant
+- servant-js
+- servant-server
+- unordered-containers
+- wai-extra
+- warp
 executables:
   teamsplit:
     main: teamsplit.hs
