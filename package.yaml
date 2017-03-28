@@ -1,8 +1,11 @@
+license: BSD3
+version: 0.0.1
+author: Mike Ledger <mike@quasimal.com>
+synopsis: Team splitter
 dependencies:
 - base
 - aeson
 - conduit-combinators
-- containers
 - esqueleto
 - text
 - time
@@ -12,13 +15,21 @@ dependencies:
 - persistent
 - persistent-template
 - persistent-sqlite
-- resourcet
 - servant
 - servant-js
 - servant-server
-- unordered-containers
 - wai-extra
 - warp
+source-dirs: src
+ghc-options: -O2 -threaded -Wall
+
+library:
+  source-dirs: src
+  exposed-modules: Api
+  other-modules: []
+
 executables:
   teamsplit:
-    main: teamsplit.hs
+    main: main.hs
+  export:
+    main: export.hs
