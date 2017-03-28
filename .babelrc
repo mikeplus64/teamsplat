@@ -1,0 +1,19 @@
+{
+  "presets": [
+    "es2015",
+    "stage-0",
+    "react",
+  ],
+  "plugins": [
+    "transform-decorators-legacy",
+  ],
+  "env": {
+    "production": {
+      "plugins": [
+        "transform-flow-strip-types",
+        "transform-react-constant-elements",
+        "transform-react-inline-elements",
+      ],
+    },
+  },
+}

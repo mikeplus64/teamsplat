@@ -1,0 +1,7 @@
+.who {
+  display: flex;
+}
+
+.whoLabel {
+  flex-grow: 1;
+}

@@ -1,0 +1,41 @@
+{
+  "extends": [
+    "airbnb",
+    "plugin:flowtype/recommended",
+  ],
+  "parserOptions": {
+    "ecmaVersion": 7,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "plugins": [
+    "flowtype",
+  ],
+  "parser": "babel-eslint",
+  "import/resolver": "webpack",
+  "env": {
+    "es6": true,
+    "browser": true
+  },
+  "rules": {
+    "linebreak-style": "off",
+    "prefer-template": 0,
+    "class-methods-use-this": 1,
+    "import/prefer-default-export": 0,
+    "no-mixed-operators": 0,
+    "no-param-reassign": ["error", { "props": false }],
+    "new-cap": 0,
+    "react/react-in-jsx-scope": 0,
+    "react/sort-comp": [1, {
+      "order": [
+        "type-annotations",
+        "static-methods",
+        "lifecycle",
+        "everything-else",
+        "render"
+      ]
+    }]
+  },
+}
