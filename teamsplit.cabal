@@ -1,0 +1,94 @@
+-- This file has been generated from package.yaml by hpack version 0.15.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           teamsplit
+version:        0.0.1
+synopsis:       Team splitter
+author:         Mike Ledger <mike@quasimal.com>
+license:        BSD3
+build-type:     Simple
+cabal-version:  >= 1.10
+
+library
+  hs-source-dirs:
+      src
+    , src
+  ghc-options: -O2 -threaded -Wall
+  build-depends:
+      base
+    , aeson
+    , conduit-combinators
+    , esqueleto
+    , text
+    , time
+    , lens
+    , mtl
+    , monad-logger
+    , persistent
+    , persistent-template
+    , persistent-sqlite
+    , servant
+    , servant-js
+    , servant-server
+    , wai-extra
+    , warp
+  exposed-modules:
+      Api
+  default-language: Haskell2010
+
+executable export
+  main-is: export.hs
+  hs-source-dirs:
+      src
+  ghc-options: -O2 -threaded -Wall
+  build-depends:
+      base
+    , aeson
+    , conduit-combinators
+    , esqueleto
+    , text
+    , time
+    , lens
+    , mtl
+    , monad-logger
+    , persistent
+    , persistent-template
+    , persistent-sqlite
+    , servant
+    , servant-js
+    , servant-server
+    , wai-extra
+    , warp
+  other-modules:
+      Api
+      TeamsplitApi
+  default-language: Haskell2010
+
+executable teamsplit
+  main-is: main.hs
+  hs-source-dirs:
+      src
+  ghc-options: -O2 -threaded -Wall
+  build-depends:
+      base
+    , aeson
+    , conduit-combinators
+    , esqueleto
+    , text
+    , time
+    , lens
+    , mtl
+    , monad-logger
+    , persistent
+    , persistent-template
+    , persistent-sqlite
+    , servant
+    , servant-js
+    , servant-server
+    , wai-extra
+    , warp
+  other-modules:
+      Api
+      TeamsplitApi
+  default-language: Haskell2010

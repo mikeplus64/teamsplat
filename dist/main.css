@@ -1,0 +1,35 @@
+.Editor__table__2WnE3 .grommetux-table td {
+  padding: 0 !important; }
+
+.Editor__table__2WnE3 input {
+  width: 100%; }
+
+.Editor__eloMeter__cc6K3 .grommetux-meter__graphic {
+  width: 100% !important; }
+
+.Editor__eloEditor__MQvqH {
+  border: 0 !important;
+  padding: 10px 22px !important; }
+
+.Editor__who__LqFQM {
+  display: flex;
+  text-decoration: none;
+  align-items: center; }
+
+.Editor__whoLabel__2N9UG {
+  padding: 0 !important;
+  margin: 0 !important;
+  flex-grow: 1; }
+
+td {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important; }
+
+.Editor__vs__3JfBp {
+  font-weight: bold;
+  text-align: center; }
+.Player__who__2bMMx {
+  display: flex; }
+
+.Player__whoLabel__s37rX {
+  flex-grow: 1; }
