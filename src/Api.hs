@@ -42,7 +42,7 @@ import           Database.Persist.TH                  (mkMigrate, mkPersist,
                                                        persistLowerCase, share,
                                                        sqlSettings)
 import           GHC.Generics                         (Generic)
-import qualified Network.Wai.Handler.Warp             as Warp (run)
+import qualified Network.Wai.Handler.Warp             as Warp (runEnv)
 import           Network.Wai.Middleware.RequestLogger
 import           Servant
 import           Servant.JS
@@ -190,4 +190,4 @@ js = jsForAPI
       })
 
 start :: IO ()
-start = Warp.run 80 . logStdoutDev =<< makeApplication
+start = Warp.runEnv 80 . logStdoutDev =<< makeApplication
