@@ -6,22 +6,36 @@ import Grommet from 'grommet/components/App';
 import Title from 'grommet/components/Title';
 import Footer from 'grommet/components/Footer';
 import Article from 'grommet/components/Article';
+import Quote from 'grommet/components/Quote';
 
 export default class App extends React.PureComponent {
   props: {
     children: ReactElement;
   };
 
-  home() {
-    return (
-      <iframe
-        width="560"
-        height="315"
-        src="https://www.youtube.com/embed/T0qagA4_eVQ"
-        frameborder="0"
-        allowfullscreen
-      />
-    );
+  content() {
+    if (this.props.children) {
+      return <article>{this.props.children}</article>;
+    } else {
+      return [
+        <article key="home">
+          <iframe
+            width="560"
+            height="315"
+            src="https://www.youtube.com/embed/T0qagA4_eVQ"
+            frameborder="0"
+            allowfullscreen
+          />
+        </article>,
+        <Footer key="credit" primary appCentered size="small">
+          <p>
+            By{' '}
+            <a href="mailto:mike@quasimal.com">mike</a> and{' '}
+            <a href="http://www.voobly.com/profile/view/124274399">voidhawk</a>
+          </p>
+        </Footer>
+      ];
+    }
   }
 
   render() {
@@ -33,17 +47,7 @@ export default class App extends React.PureComponent {
           <Link to="/table">New table</Link>
           <Link to="/tables">Table select</Link>
         </Header>
-        <article>
-          {this.props.children || this.home()}
-        </article>
-        <Footer primary appCentered size="small">
-          <p>
-            By{' '}
-            <a href="mailto:mike@quasimal.com">Mike Ledger</a>
-            {' & '}
-            <a href="http://voobly.com">Kurt &quot;voidhawk&quot;</a>
-          </p>
-        </Footer>
+        {this.content()}
       </Grommet>
     );
   }

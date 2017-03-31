@@ -19,11 +19,15 @@ export default function connect<T>(resolve: (store: Store) => T): T {
     tables,
     players,
   });
-  const store = createStore(reducer, compose(
+
+  const middlewares = [
     applyMiddleware(thunk),
     autoRehydrate(),
-    applyMiddleware(logger),
-  ));
+  ];
+  if (!process.env.production) {
+    middlewares.push(applyMiddleware(logger));
+  }
+  const store = createStore(reducer, compose(...middlewares));
   persistStore(store, {
     whitelist: ['players'],
     transforms: [immutableTransform({
