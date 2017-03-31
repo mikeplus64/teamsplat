@@ -1,1 +1,1 @@
-web: stack exec teamsplit
+web: teamsplit
