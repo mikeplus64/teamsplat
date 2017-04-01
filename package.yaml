@@ -14,7 +14,8 @@ dependencies:
 - monad-logger
 - persistent
 - persistent-template
-- persistent-sqlite
+- persistent-postgresql
+- heroku
 - servant
 - servant-js
 - servant-server
