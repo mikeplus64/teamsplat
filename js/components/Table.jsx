@@ -151,9 +151,9 @@ class Table extends React.PureComponent {
 }
 
 export default connect(
-  s => ({
+  (s, { params: { name } }) => ({
     editor: s.editor,
     maps: s.maps,
-    players: s.players,
+    players: s.players.get(name) || new Set(),
   }),
 )(Table);

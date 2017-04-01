@@ -26,7 +26,7 @@ class Editor extends React.PureComponent {
     maps: MapsState,
     editor: EditorState,
     params: { name: string },
-    players: Set<string>,
+    players: Map<string, Set<string>>,
   };
 
   state: {
@@ -60,7 +60,8 @@ class Editor extends React.PureComponent {
 
   rows() {
     const r = [];
-    const { editor: { table, name }, maps: { types }, players } = this.props;
+    const { editor: { table, name }, maps: { types }, players: allPlayers } = this.props;
+    const players = allPlayers.get(name) || new Set();
     const indices: number[] = [];
     let i = 0;
     table.forEach((row, who) => {
@@ -78,11 +79,13 @@ class Editor extends React.PureComponent {
         if (!has) {
           this.props.dispatch({
             type: 'ADD_PLAYER_TO_TEAMS',
+            table: name,
             player: who,
           });
         } else {
           this.props.dispatch({
             type: 'REMOVE_PLAYER_FROM_TEAMS',
+            table: name,
             player: who,
           });
         }

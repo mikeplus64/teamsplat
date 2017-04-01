@@ -34,8 +34,8 @@ export type ViewPlayers = {| type: 'VIEW_PLAYERS', page: number |};
 export type ViewTable = {| type: 'VIEW_TABLE', table: string |};
 export type GotTable = {| type: 'GOT_TABLE', table: string, ratings: Rating[] |};
 export type GotMaps = {| type: 'GOT_MAPS', types: string[] |};
-export type AddPlayerToTeams = {| type: 'ADD_PLAYER_TO_TEAMS', player: string |};
-export type RemovePlayerFromTeams = {| type: 'REMOVE_PLAYER_FROM_TEAMS', player: string |};
+export type AddPlayerToTeams = {| type: 'ADD_PLAYER_TO_TEAMS', player: string, table: string |};
+export type RemovePlayerFromTeams = {| type: 'REMOVE_PLAYER_FROM_TEAMS', player: string, table: string |};
 export type StartLoading = {| type: 'START_LOADING', table: string |};
 export type StopLoading = {| type: 'STOP_LOADING', table: string |};
 export type Action
@@ -52,7 +52,7 @@ export type PlayerName = string;
 export type MapType = string;
 export type EditorTable = Map<PlayerName, Map<MapType, number>>;
 
-export type PlayersState = Set<string>;
+export type PlayersState = Map<string, Set<string>>;
 export type TablesState = Map<string, Set<Rating>>;
 export type EditorState = {| name: string, table: EditorTable, loading: boolean |};
 export type MapsState = {| types: string[], record: Record<{ [map: string]: number }> |};

@@ -24,7 +24,7 @@ export default function connect<T>(resolve: (store: Store) => T): T {
     applyMiddleware(thunk),
     autoRehydrate(),
   ];
-  if (false && process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== 'production') {
     middlewares.push(applyMiddleware(logger));
   }
   const store = createStore(reducer, compose(...middlewares));
