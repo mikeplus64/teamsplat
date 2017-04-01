@@ -18,6 +18,17 @@ export type Stats<T> = {|
   of: T[],
 |};
 
+export type OldStyleTable = {|
+  [name: string]: {|
+    id: number,
+    open: string,
+    boomc: string,
+    boomo: string,
+    water: string,
+    nomad: string,
+  |},
+|};
+
 export type SetPlayer = {| type: 'SET_PLAYER', rating: Rating |};
 export type ViewPlayers = {| type: 'VIEW_PLAYERS', page: number |};
 export type ViewTable = {| type: 'VIEW_TABLE', table: string |};

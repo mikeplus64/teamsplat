@@ -15,6 +15,7 @@ dependencies:
 - persistent
 - persistent-template
 - persistent-postgresql
+- persistent-sqlite
 - heroku
 - servant
 - servant-js

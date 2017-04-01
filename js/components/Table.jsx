@@ -14,7 +14,7 @@ import Tile from 'grommet/components/Tile';
 import Tiles from 'grommet/components/Tiles';
 import Box from 'grommet/components/Box';
 import { Set } from 'immutable';
-import type { EditorState, DispatchD, MapsState } from '../types';
+import type { EditorState, DispatchD, MapsState, Stats, Rating } from '../types';
 import { getMaps, viewTable } from '../actions';
 import findBestTeams, { makeSeries } from '../teams';
 import Editor from './Editor.jsx';
@@ -40,7 +40,7 @@ class Table extends React.PureComponent {
 
   state: {
     map: ?string,
-    teams: ?[Stat<Rating>, Stat<Rating>]
+    teams: ?[Stats<Rating>, Stats<Rating>]
   } = {
     map: null,
     teams: null,
