@@ -28,7 +28,7 @@
 module Api where
 import           Conduit
 import qualified Control.Lens                         as L
-import           Control.Monad                        (void)
+import           Control.Monad                        (unless, void)
 import           Control.Monad.IO.Class               (liftIO)
 import           Control.Monad.Logger
 import qualified Data.Aeson.TH                        as JSON
