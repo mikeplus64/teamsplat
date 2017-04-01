@@ -1,6 +1,5 @@
 /* @flow */
 import { combination } from 'js-combinatorics';
-import { memoize } from 'lodash';
 import { Set } from 'immutable';
 import type { Stats, Rating } from './types';
 
@@ -36,14 +35,14 @@ function runGen(combos: { next(): Rating[] }): Team[] {
   return r;
 }
 
-function teamCombos(ratings: Rating[]): Team[] {
+function teamCombos(ratings: Rating[]): [Team[], Team[]] {
   const size: number = ratings.length / 2;
   const t1: Rating[][] = runGen(combination(ratings, size));
   if (ratings.length % 2 === 1) {
     const t2: Rating[][] = runGen(combination(ratings, size + 1));
-    return t1.concat(t2);
+    return [t2, t2];
   }
-  return t1;
+  return [t1, t1];
 }
 
 function players(ratings: Rating[]): string[] {
@@ -82,24 +81,22 @@ export default function findBestTeams(
   if (ratings.length <= 2) {
     return [null, null];
   }
-  const teams: Team[] = teamCombos(ratings);
+  const [teamsC1, teamsC2]: [Team[], Team[]] = teamCombos(ratings);
   let bestT1: ?Team = null;
   let bestT2: ?Team = null;
   let leastDiff = Number.MAX_SAFE_INTEGER;
-  for (let i = 0; i < teams.length; i += 1) {
-    const t1: Team = teams[i];
+  for (let i = 0; i < teamsC1.length; i += 1) {
+    const t1: Team = teamsC1[i];
     const t1players: string[] = players(t1.of);
-    for (let j = 0; j < teams.length; j += 1) {
-      if (i !== j) {
-        const t2: Team = teams[j];
-        const t2players: string[] = players(t2.of);
-        if (validTeams(t1players, t2players)) {
-          const diff = Math.abs(t2[method] - t1[method]);
-          if (diff < leastDiff) {
-            leastDiff = diff;
-            bestT1 = t1;
-            bestT2 = t2;
-          }
+    for (let j = 0; j < teamsC2.length; j += 1) {
+      const t2: Team = teamsC2[j];
+      const t2players: string[] = players(t2.of);
+      if (validTeams(t1players, t2players)) {
+        const diff = Math.abs(t2[method] - t1[method]);
+        if (diff < leastDiff) {
+          leastDiff = diff;
+          bestT1 = t1;
+          bestT2 = t2;
         }
       }
     }
