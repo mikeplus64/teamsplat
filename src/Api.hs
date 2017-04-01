@@ -46,6 +46,7 @@ import           Database.Persist.Postgresql          (ConnectionPool,
                                                        runMigration,
                                                        runSqlPersistMPool,
                                                        runSqlPool)
+import           Database.Persist.Sqlite              (createSqlitePool)
 import           Database.Persist.TH                  (mkMigrate, mkPersist,
                                                        persistLowerCase, share,
                                                        sqlSettings)
@@ -157,6 +158,7 @@ getPlayers page = map unValue <$> select (distinct (from (\r -> do
 
 setRatings :: Text -> Player -> MapType -> Word -> Maybe Text -> SqliteM ()
 setRatings table player maptype elo _caveat = do
+  unless (maptype `elem` mapTypes) (fail "Invalid map type")
   time <- liftIO getCurrentTime
   mrs  <- P.getBy (UniqueRatings table player maptype)
   case mrs of
@@ -218,9 +220,12 @@ server pool =
 makeConnStr :: [(Text, Text)] -> Text
 makeConnStr params = T.unwords [ T.concat [k, "=", v] | (k, v) <- params ]
 
-makeApplication :: [(Text, Text)] -> IO Application
-makeApplication params = do
-  pool <- runStderrLoggingT (createPostgresqlPool (T.encodeUtf8 (makeConnStr params)) 10)
+makeApplication :: Bool -> [(Text, Text)] -> IO Application
+makeApplication dev params = do
+  pool <- runStderrLoggingT $
+    if dev
+    then createSqlitePool "teamsplit.sqlite" 10
+    else createPostgresqlPool (T.encodeUtf8 (makeConnStr params)) 10
   runSqlPool (runMigration migrateAll) pool
   return (serve api (server pool :<|> serveDirectory "dist"))
 
@@ -234,6 +239,9 @@ js = jsForAPI
 
 start :: IO ()
 start = do
+  let
+    dev :: Bool
+    dev = False
   params <- do
     url <- lookupEnv "DATABASE_URL"
     case url of
@@ -245,4 +253,4 @@ start = do
         , ("dbname", "teamsplat")
         , ("password", "")
         ]
-  Warp.runEnv 80 . logStdoutDev =<< makeApplication params
+  Warp.runEnv 80 . logStdoutDev =<< makeApplication dev params
