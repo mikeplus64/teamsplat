@@ -15,16 +15,31 @@ export default function editor(
   state: EditorState = {
     name: 'new',
     table: new Map(),
+    loading: false,
   },
   action: Action,
 ): EditorState {
   switch (action.type) {
-    case 'VIEW_TABLE':
-      return { name: action.table, table: new Map() };
+    case 'START_LOADING': return {
+      name: state.name,
+      table: state.table,
+      loading: true,
+    };
+    case 'STOP_LOADING': return {
+      name: state.name,
+      table: state.table,
+      loading: false,
+    };
+    case 'VIEW_TABLE': return {
+      loading: state.loading,
+      name: action.table,
+      table: new Map(),
+    };
     case 'SET_PLAYER':
       if (state.name === action.rating.table) {
         const { who, map, elo } = action.rating;
         return {
+          loading: state.loading,
           name: state.name,
           table: state.table.setIn([who, map], elo),
         };
@@ -33,6 +48,7 @@ export default function editor(
     case 'GOT_TABLE':
       if (state.name === action.table) {
         return {
+          loading: state.loading,
           name: state.name,
           table: buildTable(action.ratings),
         };

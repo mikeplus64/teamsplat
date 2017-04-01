@@ -6,7 +6,7 @@ import Button from 'grommet/components/Button';
 import Table from 'grommet/components/Table';
 import TableRow from 'grommet/components/TableRow';
 import TableHeader from 'grommet/components/TableHeader';
-import Meter from 'grommet/components/Meter';
+import Spinning from 'grommet/components/icons/Spinning';
 import Label from 'grommet/components/Label';
 import EditIcon from 'grommet/components/icons/base/Edit';
 import AddIcon from 'grommet/components/icons/base/FormAdd';
@@ -64,12 +64,10 @@ class Editor extends React.PureComponent {
     const indices: number[] = [];
     let i = 0;
     table.forEach((row, who) => {
-      let sum: number = 0;
       const ratings = [];
       types.forEach((type) => {
         const elo: number = row.get(type) || defaultElo;
         const key: string = `td-${who}-${type}`;
-        sum += elo;
         ratings.push(<td key={key}>
           {this.elo(name, who, type, elo)}
         </td>);
@@ -129,7 +127,8 @@ class Editor extends React.PureComponent {
       return null;
     }
     const [rows, indices] = this.rows();
-    return (
+    return (<div>
+      {this.props.editor.loading ? <Spinning /> : null}
       <Table
         selectable
         className={theme.table}
@@ -167,8 +166,8 @@ class Editor extends React.PureComponent {
             </td>
           </TableRow>
         </tbody>
-      </Table>
-    );
+      </Table>,
+    </div>);
   }
 }
 

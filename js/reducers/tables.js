@@ -12,7 +12,8 @@ export default function tables(
       return state.set(table, new Set(ratings)); }
     case 'SET_PLAYER': {
       const { rating } = action;
-      return state.update(rating.table, ratings => ratings.add(rating)); }
+      return state.update(rating.table, ratings => (
+        ratings ? ratings.add(rating) : new Set([rating]))); }
     default:
       return state;
   }

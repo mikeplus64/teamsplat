@@ -9,7 +9,7 @@ import FormField from 'grommet/components/FormField';
 import Footer from 'grommet/components/Footer';
 import TextInput from 'grommet/components/TextInput';
 import type { OldStyleTable, DispatchD } from '../types';
-import { viewTable, setRating } from '../actions';
+import { startLoading, stopLoading, setRating } from '../actions';
 
 class NewTable extends React.PureComponent {
   props: {
@@ -22,6 +22,7 @@ class NewTable extends React.PureComponent {
   } = {};
 
   doImports(table: string, imports: OldStyleTable) {
+    this.props.dispatch(startLoading(table));
     const players = keys(imports);
     const r: Promise<any>[] = [];
     for (let i = 0; i < players.length; i += 1) {
@@ -42,7 +43,11 @@ class NewTable extends React.PureComponent {
         set('nomad', nomad),
       ]));
     }
-    return Promise.all(r);
+    return Promise.all(r).then(() => {
+      this.props.dispatch(stopLoading(table));
+    }).catch(() => {
+      this.props.dispatch(stopLoading(table));
+    });
   }
 
   startImports(table: string) {
