@@ -20,6 +20,25 @@ const eloMax: number = 2800;
 const eloMin: number = 1200;
 const defaultElo: number = 1600;
 
+function cmp<T>(a: T, b: T): number {
+  if (a === b) { return 0; }
+  if ((a: any) < (b: any)) { return -1; }
+  return 1;
+}
+
+function comparison<T, V>(
+  column: T => V,
+  ascending: boolean,
+): (a: T, b: T) => number {
+  const asc = ascending ? 1 : -1;
+  return (a, b) => asc * cmp(column(a), column(b));
+}
+
+type Row = {
+  who: string,
+  ratings: { table: string, who: string, type: string, elo: number }[],
+}
+
 class Editor extends React.PureComponent {
   props: {
     dispatch: DispatchD,
@@ -31,9 +50,18 @@ class Editor extends React.PureComponent {
 
   state: {
     hover: ?string,
+    ascending: boolean,
+    sortIndex: number,
   } = {
     hover: null,
+    ascending: true,
+    sortIndex: 0,
   };
+
+  constructor() {
+    super();
+    this.onSort = this.onSort.bind(this);
+  }
 
   elo(table: string, who: string, map: string, elo: number) {
     return (
@@ -59,23 +87,30 @@ class Editor extends React.PureComponent {
   }
 
   rows() {
-    const r = [];
+    const { ascending, sortIndex } = this.state;
     const { editor: { table, name }, maps: { types }, players: allPlayers } = this.props;
     const players = allPlayers.get(name) || new Set();
     const indices: number[] = [];
-    let i = 0;
+
+    const rows = [];
     table.forEach((row, who) => {
       const ratings = [];
+      const has: boolean = players.has(who);
       types.forEach((type) => {
         const elo: number = row.get(type) || defaultElo;
-        const key: string = `td-${who}-${type}`;
-        ratings.push(<td key={key}>
-          {this.elo(name, who, type, elo)}
-        </td>);
+        ratings.push({ type, elo });
       });
-      const key: string = `tr-${who}`;
-      const has: boolean = players.has(who);
-      const toggle = () => {
+      rows.push({ who, ratings, has });
+    });
+    const sortMethod = sortIndex === 0 ?
+      comparison(a => a.who, ascending) :
+      comparison(a => a.ratings[sortIndex - 1].elo, ascending);
+    const sorted = rows.sort(sortMethod);
+
+    const renderedRows = [];
+    for (let i = 0; i < sorted.length; i += 1) {
+      const { who, ratings, has } = sorted[i];
+      const toggleSelection = () => {
         if (!has) {
           this.props.dispatch({
             type: 'ADD_PLAYER_TO_TEAMS',
@@ -90,28 +125,29 @@ class Editor extends React.PureComponent {
           });
         }
       };
-      if (has) {
-        indices.push(i);
+      if (has) { indices.push(i); }
+      const columns = [<td key={`td-${who}-name`}>
+        <div onClick={toggleSelection} className={theme.who}>
+          <Label className={theme.whoLabel}> {who} </Label>
+          <Button
+            size="xsmall"
+            align="end"
+            icon={has ? <RemoveIcon /> : <AddIcon />}
+            onClick={toggleSelection}
+          />
+        </div>
+      </td>];
+      for (let j = 0; j < ratings.length; j += 1) {
+        const { type, elo } = ratings[j];
+        columns.push(<td key={`td-${who}-${type}`}>
+          {this.elo(name, who, type, elo)}
+        </td>);
       }
-      r.push(
-        <TableRow key={key}>
-          <td>
-            <div onClick={toggle} className={theme.who}>
-              <Label className={theme.whoLabel}> {who} </Label>
-              <Button
-                size="xsmall"
-                align="end"
-                icon={has ? <RemoveIcon /> : <AddIcon />}
-                onClick={toggle}
-              />
-            </div>
-          </td>
-          {ratings}
-        </TableRow>,
-      );
-      i += 1;
-    });
-    return [r, indices];
+      renderedRows.push(<TableRow key={`tr-${who}`} selected={has}>
+        {columns}
+      </TableRow>);
+    }
+    return [renderedRows, indices];
   }
 
   header() {
@@ -124,8 +160,13 @@ class Editor extends React.PureComponent {
     );
   }
 
+  onSort(sortIndex, ascending) {
+    this.setState({ sortIndex, ascending });
+  }
+
   render() {
     const { types } = this.props.maps;
+    const { ascending, sortIndex } = this.state;
     if (types.length === 0) {
       return null;
     }
@@ -133,11 +174,16 @@ class Editor extends React.PureComponent {
     return (<div>
       {this.props.editor.loading ? <Spinning /> : null}
       <Table
-        selectable
         className={theme.table}
         selected={indices}
+        selectable="multiple"
       >
-        <TableHeader labels={this.header()} />
+        <TableHeader
+          labels={this.header()}
+          onSort={this.onSort}
+          sortAscending={ascending}
+          sortIndex={sortIndex}
+        />
         <tbody>
           {rows}
           <TableRow>
