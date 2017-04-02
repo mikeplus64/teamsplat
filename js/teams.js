@@ -36,11 +36,12 @@ function runGen(combos: { next(): Rating[] }): Team[] {
 }
 
 function teamCombos(ratings: Rating[]): [Team[], Team[]] {
-  const size: number = ratings.length / 2;
+  const size: number = Math.floor(ratings.length / 2);
   const t1: Rating[][] = runGen(combination(ratings, size));
   if (ratings.length % 2 === 1) {
     const t2: Rating[][] = runGen(combination(ratings, size + 1));
-    return [t2, t2];
+    console.log('teamCombos', size, size + 1);
+    return [t1, t2];
   }
   return [t1, t1];
 }
@@ -57,13 +58,9 @@ function players(ratings: Rating[]): string[] {
 function validTeams(t1: string[], t2: string[]): boolean {
   // check that p1 doesn't include
   // any players from p2
-  for (let i = 0; i < t1.length; i += 1) {
-    const t1i = t1[i];
-    if (t2.findIndex(t2i => t2i === t1i) >= 0) {
-      return false;
-    }
-  }
-  return true;
+  const s1 = new Set(t1);
+  const s2 = new Set(t2);
+  return s2.intersect(s1).size === 0;
 }
 
 export function chooseRatings(
@@ -78,13 +75,14 @@ export default function findBestTeams(
   ratings: Rating[],
   method: 'average' | 'total',
 ): [?Team, ?Team] {
-  if (ratings.length <= 2) {
+  if (ratings.length <= 1) {
     return [null, null];
   }
   const [teamsC1, teamsC2]: [Team[], Team[]] = teamCombos(ratings);
   let bestT1: ?Team = null;
   let bestT2: ?Team = null;
   let leastDiff = Number.MAX_SAFE_INTEGER;
+  console.log('combos', teamsC1, teamsC2);
   for (let i = 0; i < teamsC1.length; i += 1) {
     const t1: Team = teamsC1[i];
     const t1players: string[] = players(t1.of);
@@ -101,6 +99,7 @@ export default function findBestTeams(
       }
     }
   }
+  console.log('best', bestT1, bestT2);
   return [bestT1, bestT2];
 }
 

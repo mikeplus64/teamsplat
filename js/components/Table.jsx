@@ -29,6 +29,61 @@ function nice(x: number): number {
   return Math.floor(x * 10) / 10;
 }
 
+
+const nothing = [];
+
+const errors = [
+  <blockquote className={theme.flamboyantError}>
+    <br />
+    Flamboyant System Error
+    <br />
+    <br />
+    3rd Qtr. Projection= Bad News
+  </blockquote>,
+  <blockquote className={theme.flagrantError}>
+    FLAGRANT SYSTEM ERROR
+    <br />
+    <br />
+    Computer over.
+    <br />
+    Virus = Very Yes.
+  </blockquote>,
+  <blockquote className={theme.flagrantError}>
+    FLAGRANT SYSTEM ERROR <br /> <br />
+    The system is down. I dunno what <br />
+    you did, moron, but you sure <br />
+    screwed everything up good.
+  </blockquote>,
+  <blockquote className={theme.fakeFlagrantError}>
+    FRAGRANT SYSTEM ERROR
+    <br />Your brand new computer is bloke.
+    <br />Please prepare to wait on hold
+    <br />with tech support for several hours.
+    <br />The current tech support smugness
+    <br />level is RED.
+  </blockquote>,
+  <blockquote className={theme.tsond}>
+    <div className={theme.tsondDialog}>
+      <div className={theme.ohChild}>
+        <big>
+          <img src="http://www.hrwiki.org/w/images/thumb/5/51/NO_symbol_red_w-gray.png/50px-NO_symbol_red_w-gray.png" width="50" height="50" />
+          <b> Oh, Child!</b>
+          <img src="http://www.hrwiki.org/w/images/thumb/3/3a/warning_symbol_yellow_w-gray.png/50px-warning_symbol_yellow_w-gray.png" width="50" height="47" />
+        </big>
+        <br />It's the Teal Screen<br />&nbsp;of Near Death! (TSoND)&nbsp;
+      </div>
+    </div>
+  </blockquote>,
+];
+
+function chooseErrorIndex(error: number): number {
+  let r = Math.round(Math.random() * (errors.length - 1));
+  while (r === error) {
+    r = Math.round(Math.random() * (errors.length - 1));
+  }
+  return r;
+}
+
 class Table extends React.PureComponent {
   props: {
     dispatch: DispatchD,
@@ -40,10 +95,14 @@ class Table extends React.PureComponent {
 
   state: {
     map: ?string,
-    teams: ?[Stats<Rating>, Stats<Rating>]
+    teams: ?[Stats<Rating>, Stats<Rating>],
+    error: number,
+    clicked: boolean,
   } = {
     map: null,
     teams: null,
+    clicked: false,
+    error: 0,
   };
 
   componentWillMount() {
@@ -68,11 +127,14 @@ class Table extends React.PureComponent {
   }
 
   teams() {
-    const teams = this.state.teams;
+    const { clicked, error, teams } = this.state;
     if (teams != null) {
       const [t1, t2] = teams;
-      const seriesT1 = makeSeries(t1);
-      const seriesT2 = makeSeries(t2);
+      const seriesT1 = t1 ? makeSeries(t1) : nothing;
+      const seriesT2 = t2 ? makeSeries(t2) : nothing;
+      if (seriesT2.length === 0 || seriesT1.length === 0) {
+        return clicked ? errors[error] : null;
+      }
       return (
         <table id="teams" style={{ width: '100%', height: '240px' }}>
           <thead>
@@ -90,14 +152,14 @@ class Table extends React.PureComponent {
               <td>
                 <div id="t1-g">
                   <Legend series={seriesT1} total />
-                  <Distribution series={seriesT1} />
+                  <Distribution className={theme.distrib} series={seriesT1} />
                 </div>
               </td>
               <td className={theme.vs}><b>VS</b></td>
               <td>
                 <div id="t2-g">
                   <Legend series={seriesT2} total />
-                  <Distribution series={seriesT2} />
+                  <Distribution className={theme.distrib} series={seriesT2} />
                 </div>
               </td>
               <td></td>
@@ -106,13 +168,20 @@ class Table extends React.PureComponent {
         </table>
       );
     }
-    return null;
+    return clicked ? errors[error] : null;
+  }
+
+  teamsScroll() {
+    return (
+      <div>
+        {this.teams()}
+      </div>
+    );
   }
 
   mapMenu() {
     return (
       <div>
-        {this.teams()}
         <Menu
           label={this.state.map || 'Map'}
           inline={false}
@@ -130,14 +199,37 @@ class Table extends React.PureComponent {
           primary
           onClick={() => {
             const map = this.state.map;
+            let teams = null;
             if (map != null) {
-              const teams = findBestTeams(this.getRatings(map), 'total');
-              this.setState({ teams });
+              teams = findBestTeams(this.getRatings(map), 'total');
             }
+            this.setState(s => ({
+              clicked: true,
+              teams,
+              error: chooseErrorIndex(s.error),
+            }));
           }}
         />
+        {this.teamsScroll()}
       </div>
     );
+  }
+
+  commas() {
+    const { players } = this.props;
+    const array = players.toArray();
+    const r = [];
+    for (let i = 0; i < array.length - 1; i += 1) {
+      const a = array[i];
+      r.push(<i key={`i-${a}`}>{a}</i>);
+      r.push(', ');
+    }
+    if (array.length > 1) {
+      const a = array[array.length - 1];
+      r.push('and ');
+      r.push(<i key={`i-${a}`}>{a}</i>);
+    }
+    return r;
   }
 
   render() {
@@ -145,6 +237,10 @@ class Table extends React.PureComponent {
       <h2> Ratings </h2>
       <Editor />
       <h2> Generate teams </h2>
+      <p>
+        <b> Selected players: </b>
+        {this.commas()}
+      </p>
       {this.mapMenu()}
     </div>);
   }

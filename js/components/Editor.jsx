@@ -52,6 +52,7 @@ class Editor extends React.PureComponent {
     hover: ?string,
     ascending: boolean,
     sortIndex: number,
+    error: ?string,
   } = {
     hover: null,
     ascending: true,
