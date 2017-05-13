@@ -252,7 +252,7 @@ start :: IO ()
 start = do
   let
     dev :: Bool
-    dev = True
+    dev = False
   params <- do
     url <- lookupEnv "DATABASE_URL"
     case url of
