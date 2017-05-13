@@ -2,6 +2,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { keys } from 'lodash';
+import Box from 'grommet/components/Box';
 import Button from 'grommet/components/Button';
 import Form from 'grommet/components/Form';
 import FormFields from 'grommet/components/FormFields';
@@ -61,7 +62,7 @@ class NewTable extends React.PureComponent {
   }
 
   render() {
-    return (
+    return (<Box pad="medium">
       <Form>
         <p>
           Trying to create a table that already exists will do nothing
@@ -105,7 +106,7 @@ class NewTable extends React.PureComponent {
           />
         </Footer>
       </Form>
-    );
+    </Box>);
   }
 }
 

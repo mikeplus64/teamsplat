@@ -1,7 +1,8 @@
+// @flow
 // eslint react/no-array-index-key: "off"
-/* @flow */
 import React from 'react';
 import { connect } from 'react-redux';
+import Box from 'grommet/components/Box';
 import Button from 'grommet/components/Button';
 import Table from 'grommet/components/Table';
 import TableRow from 'grommet/components/TableRow';
@@ -13,15 +14,15 @@ import AddIcon from 'grommet/components/icons/base/FormAdd';
 import RemoveIcon from 'grommet/components/icons/base/FormClose';
 import { Set } from 'immutable';
 import type { EditorState, DispatchD, MapsState } from '../types';
-import { setRating } from '../actions';
+import { setRating, deletePlayers } from '../actions';
 import theme from './Editor.css';
 
-const eloMax: number = 2800;
-const eloMin: number = 1200;
 const defaultElo: number = 1600;
+const noPlayers = { toArray: () => [] };
 
 function cmp<T>(a: T, b: T): number {
   if (a === b) { return 0; }
+  if (typeof a === 'string' && typeof b === 'string') { return a.localeCompare(b); }
   if ((a: any) < (b: any)) { return -1; }
   return 1;
 }
@@ -32,11 +33,6 @@ function comparison<T, V>(
 ): (a: T, b: T) => number {
   const asc = ascending ? 1 : -1;
   return (a, b) => asc * cmp(column(a), column(b));
-}
-
-type Row = {
-  who: string,
-  ratings: { table: string, who: string, type: string, elo: number }[],
 }
 
 class Editor extends React.PureComponent {
@@ -57,6 +53,7 @@ class Editor extends React.PureComponent {
     hover: null,
     ascending: true,
     sortIndex: 0,
+    error: null,
   };
 
   constructor() {
@@ -103,9 +100,11 @@ class Editor extends React.PureComponent {
       });
       rows.push({ who, ratings, has });
     });
+
     const sortMethod = sortIndex === 0 ?
       comparison(a => a.who, ascending) :
       comparison(a => a.ratings[sortIndex - 1].elo, ascending);
+
     const sorted = rows.sort(sortMethod);
 
     const renderedRows = [];
@@ -140,7 +139,7 @@ class Editor extends React.PureComponent {
       </td>];
       for (let j = 0; j < ratings.length; j += 1) {
         const { type, elo } = ratings[j];
-        columns.push(<td key={`td-${who}-${type}`}>
+        columns.push(<td className={theme.elo} key={`td-${who}-${type}`}>
           {this.elo(name, who, type, elo)}
         </td>);
       }
@@ -172,12 +171,13 @@ class Editor extends React.PureComponent {
       return null;
     }
     const [rows, indices] = this.rows();
-    return (<div>
+    return (<div className={theme.editorWrapper}>
       {this.props.editor.loading ? <Spinning /> : null}
       <Table
-        className={theme.table}
+        className={theme.editor}
         selected={indices}
         selectable="multiple"
+        scrollable
       >
         <TableHeader
           labels={this.header()}
@@ -190,6 +190,7 @@ class Editor extends React.PureComponent {
           <TableRow>
             <td colSpan={types.length + 1}>
               <input
+                className={theme.addPlayer}
                 type="text"
                 placeholder="Add a player ..."
                 onKeyPress={(event) => {
@@ -213,10 +214,28 @@ class Editor extends React.PureComponent {
                   }
                 }}
               />
+
             </td>
           </TableRow>
         </tbody>
-      </Table>,
+      </Table>
+      <Box pad="medium">
+        <Button
+          critical
+          label="Delete selected players"
+          onClick={() => {
+            const table = this.props.editor.name;
+            const sel: string[] = (this.props.players.get(table) || noPlayers).toArray();
+            if (sel.length === 0) { return; }
+            const ok: boolean = confirm(
+              'Really delete ' + JSON.stringify(sel, null, 2) +
+              '?\nThis cannot be undone.');
+            if (ok) {
+              this.props.dispatch(deletePlayers(table, sel));
+            }
+          }}
+        />
+      </Box>
     </div>);
   }
 }

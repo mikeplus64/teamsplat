@@ -18,20 +18,6 @@ type Props = {
   controls: ?boolean,
 };
 
-function Error(error: ?string) {
-  if (error) {
-    return (
-      <blockquote style={{ background: '#32407d', textAlign: 'center' }}>
-        Flamboyant System Error
-        <br />
-        <br />
-        3rd Qtr. Projection= Bad News
-      </blockquote>
-    );
-  }
-  return null;
-}
-
 function Player(props: Props) {
   const { players, who, average, controls } = props;
   const has = players.has(who);

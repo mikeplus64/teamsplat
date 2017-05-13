@@ -45,6 +45,17 @@ export default function editor(
         };
       }
       return state;
+    case 'DELETED_PLAYERS':
+      if (state.name === action.table) {
+        const { players } = action;
+        return {
+          loading: state.loading,
+          name: state.name,
+          table: state.table.withMutations(mut =>
+            players.forEach(p => mut.remove(p))),
+        };
+      }
+      return state;
     case 'GOT_TABLE':
       if (state.name === action.table) {
         return {

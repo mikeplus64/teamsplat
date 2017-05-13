@@ -177,6 +177,10 @@ setRatings table player maptype elo _caveat = do
       , ratingsPastRates = []
       }
 
+deletePlayer :: Text -> Player -> SqliteM ()
+deletePlayer table player = P.deleteWhere
+  [RatingsTable P.==. table, RatingsWho P.==. player]
+
 --------------------------------------------------------------------------------
 
 type Api =
@@ -195,6 +199,10 @@ type Api =
     :> Capture "elo" Word
     :> Capture "caveat" (Maybe Text)
     :> Post '[JSON] Bool
+  :<|> "delete"
+    :> Capture "table" Text
+    :> Capture "player" Player
+    :> Post '[JSON] Bool
   :<|> "table"  :> Capture "table" Text :> Get '[JSON] [Rating]
 
 type ApiWithStatic = Api :<|> Raw
@@ -209,8 +217,11 @@ server pool =
   :<|> return mapTypes
   :<|> (\table player -> sql (ratingHistory table player))
   :<|> (\table player maptype elo caveat -> do
-           sql (setRatings table player maptype elo caveat)
-           return True)
+    sql (setRatings table player maptype elo caveat)
+    return True)
+  :<|> (\table player -> do
+    sql (deletePlayer table player)
+    return True)
   :<|> sql . getRatings
   where
     sql :: SqlPersistT (NoLoggingT (ResourceT IO)) a -> Handler a
@@ -241,7 +252,7 @@ start :: IO ()
 start = do
   let
     dev :: Bool
-    dev = False
+    dev = True
   params <- do
     url <- lookupEnv "DATABASE_URL"
     case url of

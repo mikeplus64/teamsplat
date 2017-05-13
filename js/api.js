@@ -104,6 +104,27 @@ module.exports.postRateByTableByPlayerByMapByEloByCaveat = function(table, playe
   xhr.send(null);
 };
 
+module.exports.postDeleteByTableByPlayer = function(table, player, onSuccess, onError) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/delete/' + encodeURIComponent(table) + '/' + encodeURIComponent(player) + '', true);
+  xhr.setRequestHeader('Accept', 'application/json');
+  xhr.onreadystatechange = function () {
+    var res = null;
+    if (xhr.readyState === 4) {
+      if (xhr.status === 204 || xhr.status === 205) {
+        onSuccess();
+      } else if (xhr.status >= 200 && xhr.status < 300) {
+        try { res = JSON.parse(xhr.responseText); } catch (e) { onError(e); }
+        if (res) onSuccess(res);
+      } else {
+        try { res = JSON.parse(xhr.responseText); } catch (e) { onError(e); }
+        if (res) onError(res);
+      }
+    }
+  };
+  xhr.send(null);
+};
+
 module.exports.getTableByTable = function(table, onSuccess, onError) {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', '/table/' + encodeURIComponent(table) + '', true);

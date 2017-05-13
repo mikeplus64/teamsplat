@@ -82,7 +82,6 @@ export default function findBestTeams(
   let bestT1: ?Team = null;
   let bestT2: ?Team = null;
   let leastDiff = Number.MAX_SAFE_INTEGER;
-  console.log('combos', teamsC1, teamsC2);
   for (let i = 0; i < teamsC1.length; i += 1) {
     const t1: Team = teamsC1[i];
     const t1players: string[] = players(t1.of);

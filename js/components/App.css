@@ -1,0 +1,4 @@
+
+:global(.grommet.grommetux-app--centered) {
+  max-width: none !important;
+}

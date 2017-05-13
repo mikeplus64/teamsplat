@@ -36,6 +36,7 @@ export type GotTable = {| type: 'GOT_TABLE', table: string, ratings: Rating[] |}
 export type GotMaps = {| type: 'GOT_MAPS', types: string[] |};
 export type AddPlayerToTeams = {| type: 'ADD_PLAYER_TO_TEAMS', player: string, table: string |};
 export type RemovePlayerFromTeams = {| type: 'REMOVE_PLAYER_FROM_TEAMS', player: string, table: string |};
+export type DeletedPlayers = {| type: 'DELETED_PLAYERS', table: string, players: string[] |};
 export type StartLoading = {| type: 'START_LOADING', table: string |};
 export type StopLoading = {| type: 'STOP_LOADING', table: string |};
 export type Action
@@ -45,6 +46,7 @@ export type Action
   | GotMaps
   | AddPlayerToTeams
   | RemovePlayerFromTeams
+  | DeletedPlayers
   | StartLoading
   | StopLoading;
 

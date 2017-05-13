@@ -1,18 +1,15 @@
+// @flow
 // eslint react/no-array-index-key: "off"
-/* @flow */
 import React from 'react';
 import { connect } from 'react-redux';
+import Box from 'grommet/components/Box';
 import Distribution from 'grommet/components/Distribution';
 import Legend from 'grommet/components/Legend';
-import Label from 'grommet/components/Label';
-import EditIcon from 'grommet/components/icons/base/Edit';
 import Actions from 'grommet/components/icons/base/Menu';
 import Button from 'grommet/components/Button';
 import Menu from 'grommet/components/Menu';
 import Anchor from 'grommet/components/Anchor';
-import Tile from 'grommet/components/Tile';
-import Tiles from 'grommet/components/Tiles';
-import Box from 'grommet/components/Box';
+import Split from 'grommet/components/Split';
 import { Set } from 'immutable';
 import type { EditorState, DispatchD, MapsState, Stats, Rating } from '../types';
 import { getMaps, viewTable } from '../actions';
@@ -24,11 +21,6 @@ import theme from './Editor.css';
 const eloMax: number = 3000;
 const eloMin: number = 0;
 const defaultElo: number = 1600;
-
-function nice(x: number): number {
-  return Math.floor(x * 10) / 10;
-}
-
 
 const nothing = [];
 
@@ -139,16 +131,16 @@ class Table extends React.PureComponent {
         <table id="teams" style={{ width: '100%', height: '240px' }}>
           <thead>
             <tr>
-              <th style={{ width: '5%' }}></th>
+              <th style={{ width: '5%' }} />
               <th style={{ width: '35%' }}>Team 1</th>
-              <th style={{ width: '20%' }}></th>
+              <th style={{ width: '20%' }} />
               <th style={{ width: '35%' }}>Team 2</th>
-              <th style={{ width: '5%' }}></th>
+              <th style={{ width: '5%' }} />
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td></td>
+              <td />
               <td>
                 <div id="t1-g">
                   <Legend series={seriesT1} total />
@@ -162,7 +154,7 @@ class Table extends React.PureComponent {
                   <Distribution className={theme.distrib} series={seriesT2} />
                 </div>
               </td>
-              <td></td>
+              <td />
             </tr>
           </tbody>
         </table>
@@ -181,7 +173,7 @@ class Table extends React.PureComponent {
 
   mapMenu() {
     return (
-      <div>
+      <div className={theme.table}>
         <Menu
           label={this.state.map || 'Map'}
           inline={false}
@@ -215,10 +207,13 @@ class Table extends React.PureComponent {
     );
   }
 
-  commas() {
+  oxfordCommaPlayers() {
     const { players } = this.props;
     const array = players.toArray();
     const r = [];
+    if (array.length === 0) {
+      return <i> No players selected </i>;
+    }
     for (let i = 0; i < array.length - 1; i += 1) {
       const a = array[i];
       r.push(<i key={`i-${a}`}>{a}</i>);
@@ -228,20 +223,23 @@ class Table extends React.PureComponent {
       const a = array[array.length - 1];
       r.push('and ');
       r.push(<i key={`i-${a}`}>{a}</i>);
+    } else {
+      const a = array[0];
+      r.push(<i key={`i-${a}`}>{a}</i>);
     }
-    return r;
+    return <span> Selected players: {r} </span>;
   }
 
   render() {
     return (<div>
-      <h2> Ratings </h2>
       <Editor />
-      <h2> Generate teams </h2>
-      <p>
-        <b> Selected players: </b>
-        {this.commas()}
-      </p>
-      {this.mapMenu()}
+      <Box pad="medium">
+        <h2> Generate teams </h2>
+        <p>
+          {this.oxfordCommaPlayers()}
+        </p>
+        {this.mapMenu()}
+      </Box>
     </div>);
   }
 }

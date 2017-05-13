@@ -60,6 +60,21 @@ export const viewTable: (table: string) => ThunkActionR<Promise<Rating[]>> =
       return ratings;
     });
 
+export const deletePlayers: (table: string, players: string[]) => ThunkActionR<Promise<any>> =
+  (table, players) => dispatch =>
+    Promise.all(players.map(function hack(player, tryNo = 0) {
+      if (tryNo > 10) {
+        return Promise.reject();
+      }
+      return (
+        new Promise((resolve, reject) =>
+          api.postDeleteByTableByPlayer(table, player, resolve, reject))
+        .then(() => {
+          dispatch({ type: 'REMOVE_PLAYER_FROM_TEAMS', table, player });
+          dispatch({ type: 'DELETED_PLAYERS', table, players });
+        }, () => hack(player, tryNo + 1))
+      );
+    }));
 
 export function startLoading(table: string): StartLoading {
   return { type: 'START_LOADING', table };
@@ -68,3 +83,4 @@ export function startLoading(table: string): StartLoading {
 export function stopLoading(table: string): StopLoading {
   return { type: 'STOP_LOADING', table };
 }
+

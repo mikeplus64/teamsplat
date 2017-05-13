@@ -1,22 +1,18 @@
-
-.table > :global(.grommetux-table__table) {
-}
-
-.table :global(.grommetux-table) td {
+.editor :global(.grommetux-table) td {
   padding: 0 !important;
 }
 
-.table input {
+.elo input {
+  width: 100%;
+  border: none !important;
+}
+
+.addPlayer {
   width: 100%;
 }
 
 .eloMeter :global(.grommetux-meter__graphic) {
   width: 100% !important;
-}
-
-.eloEditor {
-  border: 0 !important;
-  padding: 10px 22px !important;
 }
 
 .who {
