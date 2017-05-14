@@ -13,13 +13,14 @@ import './App.css';
 
 export default class App extends React.PureComponent {
   props: {
-    children: React$Component<>;
+    children: React$Component<>,
+    main: ?React$Component<>,
+    sidebar: ?React$Component<>,
   };
 
   content() {
-    if (this.props.children) {
-      return this.props.children;
-    }
+    if (this.props.main) { return this.props.main; }
+    if (this.props.children) { return this.props.children; }
     return (<Box pad="medium">
       <article key="home">
         <iframe
@@ -43,13 +44,14 @@ export default class App extends React.PureComponent {
       <Grommet>
         <Split flex="right">
           <Sidebar colorIndex="grey-1-a" size="small">
-            <Header pad="medium">
-              <Title> Team splatter </Title>
+            <Header pad="small" size="small">
+              <Title truncate={false}> <span style={{ fontSize: '1.2rem' }}>Teamsplatter</span> </Title>
             </Header>
-            <Menu primary size="small">
+            <Menu primary size="small" pad="xsmall">
               <Anchor path="/" label="Home" />
               <Anchor path="/table" label="New table" />
               <Anchor path="/tables" label="Tables" />
+              {this.props.sidebar}
             </Menu>
           </Sidebar>
           <Box>

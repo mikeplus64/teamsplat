@@ -38,6 +38,8 @@
   "dependencies": {
     "babel-preset-react": "^6.23.0",
     "babel-preset-react-es2015": "^1.2.0",
+    "fuse.js": "^3.0.2",
+    "fuzzysearch": "^1.0.3",
     "grommet": "^1.3.3",
     "immutable": "^3.8.1",
     "js-combinatorics": "^0.5.2",

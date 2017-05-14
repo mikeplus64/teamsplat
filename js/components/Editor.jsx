@@ -86,7 +86,7 @@ class Editor extends React.PureComponent {
 
   rows() {
     const { ascending, sortIndex } = this.state;
-    const { editor: { table, name }, maps: { types }, players: allPlayers } = this.props;
+    const { editor: { searchedTable: table, name }, maps: { types }, players: allPlayers } = this.props;
     const players = allPlayers.get(name) || new Set();
     const indices: number[] = [];
 

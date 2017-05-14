@@ -39,6 +39,7 @@ export type RemovePlayerFromTeams = {| type: 'REMOVE_PLAYER_FROM_TEAMS', player:
 export type DeletedPlayers = {| type: 'DELETED_PLAYERS', table: string, players: string[] |};
 export type StartLoading = {| type: 'START_LOADING', table: string |};
 export type StopLoading = {| type: 'STOP_LOADING', table: string |};
+export type SearchFor = {| type: 'SEARCH_FOR', query: string |};
 export type Action
   = SetPlayer
   | ViewTable
@@ -48,7 +49,8 @@ export type Action
   | RemovePlayerFromTeams
   | DeletedPlayers
   | StartLoading
-  | StopLoading;
+  | StopLoading
+  | SearchFor;
 
 export type PlayerName = string;
 export type MapType = string;
@@ -56,7 +58,14 @@ export type EditorTable = Map<PlayerName, Map<MapType, number>>;
 
 export type PlayersState = Map<string, Set<string>>;
 export type TablesState = Map<string, Set<Rating>>;
-export type EditorState = {| name: string, table: EditorTable, loading: boolean |};
+export type EditorState = {
+  name: string,
+  table: EditorTable,
+  loading: boolean,
+  query: string,
+  searchedTable: EditorTable,
+};
+
 export type MapsState = {| types: string[], record: Record<{ [map: string]: number }> |};
 export type State = {|
   players: PlayersState,

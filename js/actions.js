@@ -1,6 +1,6 @@
 /* @flow */
 import api from './api';
-import type { ThunkActionR, Rating, StartLoading, StopLoading } from './types';
+import type { ThunkActionR, Rating, StartLoading, StopLoading, SearchFor } from './types';
 
 export const getMaps: ThunkActionR<Promise<string[]>> = (dispatch, getState) => {
   const { maps } = getState();
@@ -84,3 +84,6 @@ export function stopLoading(table: string): StopLoading {
   return { type: 'STOP_LOADING', table };
 }
 
+export function searchFor(query: string): SearchFor {
+  return { type: 'SEARCH_FOR', query };
+}
