@@ -48,6 +48,9 @@ module.exports = env => ({
   },
   plugins: [
     new webpack.EnvironmentPlugin({
+      'process.env': {
+        NODE_ENV: production(env) ? 'production' : 'development',
+      },
       NODE_ENV: production(env) ? 'production' : 'development',
     }),
     ExtractCssPlugin,
