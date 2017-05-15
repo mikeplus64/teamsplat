@@ -1,13 +1,14 @@
 // @flow
 import { keys } from 'lodash';
 
-let inactivity: number = 0;
+window.funcounter = 0;
+
 let inactive: boolean = false;
 let havingFun: boolean = false;
 
 window.onfocus = () => {
   inactive = false;
-  inactivity = 0;
+  window.funcounter = 0;
 };
 
 window.onblur = () => {
@@ -50,10 +51,10 @@ function fun(youtube) {
 
 setInterval(() => {
   if (inactive) {
-    inactivity += 1;
-    console.log('inactive', inactivity);
+    window.funcounter += 1;
+    console.log('inactive', window.funcounter);
   }
-  if (inactivity > 720) {
+  if (window.funcounter > 720) {
     fun(choose());
   }
 }, 1000);
