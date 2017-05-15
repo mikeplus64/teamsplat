@@ -1,3 +1,25 @@
 .search :global(.grommetux-search-input__input) {
   width: 100%;
 }
+
+.quick {
+  width: 100%;
+}
+
+.panel {
+  padding: 1em 1em;
+  border-top: 2px solid white;
+}
+
+.panelHeader {
+  margin-top: 12px;
+  margin-bottom: 0px;
+}
+
+.help {
+  font-size: 0.7em !important;
+  font-style: italic;
+  padding: 0 !important;
+  margin: 0.5em 0 !important;
+  white-space: pre-wrap;
+}

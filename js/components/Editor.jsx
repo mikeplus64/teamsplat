@@ -64,7 +64,7 @@ class Editor extends React.PureComponent {
   elo(table: string, who: string, map: string, elo: number) {
     return (
       <input
-        className={theme.eloEditor}
+        className={`${theme.eloEditor} ${theme.p0}`}
         type="number"
         defaultValue={elo}
         onMouseEnter={() => this.setState({ hover: map })}

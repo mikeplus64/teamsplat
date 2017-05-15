@@ -40,6 +40,7 @@ export type DeletedPlayers = {| type: 'DELETED_PLAYERS', table: string, players:
 export type StartLoading = {| type: 'START_LOADING', table: string |};
 export type StopLoading = {| type: 'STOP_LOADING', table: string |};
 export type SearchFor = {| type: 'SEARCH_FOR', query: string |};
+export type DropSelection = {| type: 'DROP_SELECTION' |};
 export type Action
   = SetPlayer
   | ViewTable
@@ -50,7 +51,9 @@ export type Action
   | DeletedPlayers
   | StartLoading
   | StopLoading
-  | SearchFor;
+  | DropSelection
+  | SearchFor
+  ;
 
 export type PlayerName = string;
 export type MapType = string;

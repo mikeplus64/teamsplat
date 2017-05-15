@@ -104,3 +104,8 @@ td {
   margin: 0;
   border: none;
 }
+
+.p0 {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}

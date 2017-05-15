@@ -1,6 +1,12 @@
 /* @flow */
+import { Map } from 'immutable';
+import Fuse from '../node_modules/fuse.js/dist/fuse';
 import api from './api';
-import type { ThunkActionR, Rating, StartLoading, StopLoading, SearchFor } from './types';
+import type {
+  EditorTable, PlayerName, MapType,
+  ThunkActionR, Rating, StartLoading,
+  StopLoading, SearchFor,
+} from './types';
 
 export const getMaps: ThunkActionR<Promise<string[]>> = (dispatch, getState) => {
   const { maps } = getState();
@@ -87,3 +93,43 @@ export function stopLoading(table: string): StopLoading {
 export function searchFor(query: string): SearchFor {
   return { type: 'SEARCH_FOR', query };
 }
+
+const fuse = new Fuse([], {
+  shouldSort: true,
+  includeScore: false,
+  threshold: 0.6,
+  location: 0,
+  distance: 100,
+  maxPatternLength: 32,
+  minMatchCharLength: 1,
+  keys: [0],
+});
+
+const splitter = /[ ,]+/;
+export const selectNames: (table: string, names: string) => ThunkActionR<void> =
+  (tableName, quicknames) => (dispatch, getState) => {
+    dispatch({ type: 'DROP_SELECTION' });
+    const names: string[] = quicknames.trim().split(splitter);
+    if (names.length === 0) { return; }
+
+    const { table } = getState().editor;
+
+    fuse.set(Array.from(table.entries()));
+    function bestMatch(query: string): ?PlayerName {
+      const nice = query.trim();
+      if (nice === '') { return null; }
+      const r = fuse.search(nice);
+      if (r.length > 0) {
+        const name = r[0][0];
+        return name;
+      }
+      return null;
+    }
+
+    names.forEach((name) => {
+      const player: ?string = bestMatch(name);
+      if (player != null) {
+        dispatch({ type: 'ADD_PLAYER_TO_TEAMS', table: tableName, player });
+      }
+    });
+  };

@@ -18,6 +18,7 @@ export default function players(
       const { table, player } = action;
       return state.update(table, new Set(), s => s.remove(player));
     }
+    case 'DROP_SELECTION': return new Map();
     default: return state;
   }
 }
