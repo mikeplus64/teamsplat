@@ -6,17 +6,19 @@ window.funcounter = 0;
 let inactive: boolean = false;
 let havingFun: boolean = false;
 
-const funzone = document.getElementById('funzone');
-
 window.onfocus = () => {
   inactive = false;
   window.funcounter = 0;
 };
 
+let funzone;
+
 window.onblur = () => {
   inactive = true;
   havingFun = false;
-  funzone.innerHTML = '';
+  if (funzone) {
+    funzone.innerHTML = '';
+  }
 };
 
 const songs = {
@@ -41,13 +43,16 @@ function choose(): string {
 }
 
 function fun(youtube) {
+  funzone = document.getElementById('funzone');
   if (funzone && !havingFun) {
     havingFun = true;
     funzone.innerHTML = (
       `<iframe id="yt" width="560" height="315" src="${youtube}?autoplay=1&enablejsapi=1" frameborder="0"></iframe>`
     );
     setTimeout(() => {
-      funzone.style.display = 'none';
+      if (funzone) {
+        funzone.style.display = 'none';
+      }
     }, 6000);
   }
 }
