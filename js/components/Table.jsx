@@ -227,7 +227,7 @@ class Table extends React.PureComponent {
       const a = array[0];
       r.push(<i key={`i-${a}`}>{a}</i>);
     }
-    return <span> Selected players: {r} </span>;
+    return <span> Selected players ({array.length}): {r} </span>;
   }
 
   render() {
