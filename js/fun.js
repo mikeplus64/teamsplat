@@ -5,20 +5,16 @@ window.funcounter = 0;
 
 let inactive: boolean = false;
 let havingFun: boolean = false;
+let funzone;
 
 window.onfocus = () => {
   inactive = false;
   window.funcounter = 0;
 };
 
-let funzone;
-
 window.onblur = () => {
   inactive = true;
-  havingFun = false;
-  if (funzone) {
-    funzone.innerHTML = '';
-  }
+  window.funcounter = 0;
 };
 
 const songs = {
