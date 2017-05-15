@@ -16,15 +16,15 @@ window.onblur = () => {
 
 const songs = {
   lotto: 'https://www.youtube.com/embed/n52tm3kjqgQ',
-  electric: 'https://www.youtube.com/watch?v=w323VoKky1Q',
-  dollDance: 'https://www.youtube.com/watch?v=yiWgQ1b4SsM',
-  discoShuffle: 'https://www.youtube.com/watch?v=NGggrr89VnA',
-  shaft2: 'https://www.youtube.com/watch?v=FS8K9bTr_jc',
-  quicksand: 'https://www.youtube.com/watch?v=pIHWJSIgRQI',
-  eightyeight: 'https://www.youtube.com/watch?v=hn7WRJJnYJ0',
-  sicilian: 'https://www.youtube.com/watch?v=XUFJfco3vBY',
-  adentro: 'https://www.youtube.com/watch?v=DqtcjI1_k2o',
-  duncow: 'https://www.youtube.com/watch?v=7DDAuytA_YY',
+  electric: 'https://www.youtube.com/embed/w323VoKky1Q',
+  dollDance: 'https://www.youtube.com/embed/yiWgQ1b4SsM',
+  discoShuffle: 'https://www.youtube.com/embed/NGggrr89VnA',
+  shaft2: 'https://www.youtube.com/embed/FS8K9bTr_jc',
+  quicksand: 'https://www.youtube.com/embed/pIHWJSIgRQI',
+  eightyeight: 'https://www.youtube.com/embed/hn7WRJJnYJ0',
+  sicilian: 'https://www.youtube.com/embed/XUFJfco3vBY',
+  adentro: 'https://www.youtube.com/embed/DqtcjI1_k2o',
+  duncow: 'https://www.youtube.com/embed/7DDAuytA_YY',
 };
 
 const names: string[] = keys(songs);
@@ -51,9 +51,9 @@ function fun(youtube) {
 setInterval(() => {
   if (inactive) {
     inactivity += 1;
+    console.log('inactive', inactivity);
   }
-
-  if (inactivity > 60) {
+  if (inactivity > 720) {
     fun(choose());
   }
 }, 1000);
