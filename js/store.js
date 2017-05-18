@@ -29,7 +29,7 @@ export default function connect<T>(resolve: (store: Store) => T): T {
   }
   const store = createStore(reducer, compose(...middlewares));
   persistStore(store, {
-    whitelist: ['players'],
+    whitelist: ['players', 'maps'],
     transforms: [immutableTransform({
       whitelist: ['players'],
     })],

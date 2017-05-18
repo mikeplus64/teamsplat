@@ -1,12 +1,13 @@
 /* @flow */
-import { Map } from 'immutable';
 import Fuse from '../node_modules/fuse.js/dist/fuse';
 import api from './api';
 import type {
-  EditorTable, PlayerName, MapType,
+  PlayerName,
   ThunkActionR, Rating, StartLoading,
-  StopLoading, SearchFor,
+  StopLoading, SearchFor, SelectMap,
+  Team,
 } from './types';
+import findBestTeams from './teams';
 
 export const getMaps: ThunkActionR<Promise<string[]>> = (dispatch, getState) => {
   const { maps } = getState();
@@ -94,6 +95,10 @@ export function searchFor(query: string): SearchFor {
   return { type: 'SEARCH_FOR', query };
 }
 
+export function selectMap(map: string): SelectMap {
+  return { type: 'SELECT_MAP', map };
+}
+
 const fuse = new Fuse([], {
   shouldSort: true,
   includeScore: false,
@@ -125,7 +130,6 @@ export const selectNames: (table: string, names: string) => ThunkActionR<void> =
       }
       return null;
     }
-
     names.forEach((name) => {
       const player: ?string = bestMatch(name);
       if (player != null) {
@@ -133,3 +137,35 @@ export const selectNames: (table: string, names: string) => ThunkActionR<void> =
       }
     });
   };
+
+
+export const computeTeams: ThunkActionR<Promise<[?Team, ?Team]>> =
+  (dispatch, getState) => new Promise((resolve, reject) => {
+    const {
+      players,
+      editor: {
+        name: tableName,
+        table,
+      },
+      maps: {
+        selected,
+      },
+    } = getState();
+    if (selected != null) {
+      const map: string = selected;
+      const ratings: Rating[] = [];
+      players.get(tableName).forEach((who) => {
+        ratings.push({
+          elo: table.getIn([who, map]) || 1600,
+          who,
+          map,
+          table: tableName,
+        });
+      });
+      const teams = findBestTeams(ratings, 'total');
+      dispatch({ type: 'COMPUTED_TEAMS', teams });
+      resolve(teams);
+    }
+    reject('No selection');
+  });
+

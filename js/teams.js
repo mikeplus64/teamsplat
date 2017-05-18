@@ -3,8 +3,6 @@ import { combination } from 'js-combinatorics';
 import { Set } from 'immutable';
 import type { Stats, Rating } from './types';
 
-type Team = Stats<Rating>;
-
 const makeStats: (ratings: Rating[]) => Team = (ratings: Rating[]) => {
   let total: number = 0;
   let min: number = 3000;
@@ -40,7 +38,6 @@ function teamCombos(ratings: Rating[]): [Team[], Team[]] {
   const t1: Rating[][] = runGen(combination(ratings, size));
   if (ratings.length % 2 === 1) {
     const t2: Rating[][] = runGen(combination(ratings, size + 1));
-    console.log('teamCombos', size, size + 1);
     return [t1, t2];
   }
   return [t1, t1];
@@ -98,11 +95,25 @@ export default function findBestTeams(
       }
     }
   }
-  console.log('best', bestT1, bestT2);
   return [bestT1, bestT2];
 }
 
-export function makeSeries({ of }: Team): {
+
+function colourName(i) {
+  switch ((i % 8) + 1) {
+    case 1: return 'blue';
+    case 2: return 'critical';
+    case 3: return 'ok';
+    case 4: return 'warning';
+    case 5: return 'accent-1';
+    case 6: return 'brand';
+    case 7: return 'accent-2';
+    case 8: return 'grey-2';
+    default: return 'unset';
+  }
+}
+
+export function makeSeries({ of }: Team, colourOffset: number = 0): {
   label: string,
   value: number,
   colorIndex: string,
@@ -110,10 +121,11 @@ export function makeSeries({ of }: Team): {
   const s = [];
   for (let i = 0; i < of.length; i += 1) {
     const { who, elo } = of[i];
+    const c = i + 1 + colourOffset;
     s.push({
       label: who,
       value: elo,
-      colorIndex: `graph-${i + 1}`,
+      colorIndex: colourName(c),
     });
   }
   return s;

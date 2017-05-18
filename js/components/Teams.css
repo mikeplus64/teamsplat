@@ -1,0 +1,14 @@
+
+:global(.grommetux-color-index-blue) {
+  fill: #0000ab;
+  stroke: #0000ab;
+  stroke-width: 0;
+}
+
+:global(.grommetux-background-color-index-blue) {
+  color: white;
+}
+
+:global(.grommetux-distribution__item) {
+  border-radius: 4px;
+}

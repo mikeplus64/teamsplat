@@ -6,19 +6,21 @@
   width: 100%;
 }
 
+.label {
+  font-weight: 100;
+}
+
 .panel {
-  padding: 1em 1em;
-  border-top: 2px solid white;
+  padding: 0 1em;
 }
 
 .panelHeader {
-  margin-top: 12px;
-  margin-bottom: 0px;
+  margin-top: 24px;
+  margin-bottom: 6px;
 }
 
 .help {
   font-size: 0.7em !important;
-  font-style: italic;
   padding: 0 !important;
   margin: 0.5em 0 !important;
   white-space: pre-wrap;

@@ -1,6 +1,8 @@
 // @flow
 import { keys } from 'lodash';
+import html2canvas from 'html2canvas';
 
+window.html2canvas = html2canvas;
 window.funcounter = 0;
 
 let inactive: boolean = false;
@@ -58,7 +60,43 @@ setInterval(() => {
     window.funcounter += 1;
     // console.log('inactive', window.funcounter);
   }
-  if (window.funcounter > 720) {
+  if (window.funcounter > 1440) {
     fun(choose());
   }
 }, 1000);
+
+function screenfun() {
+  const body: ?HTMLElement = document.getElementById('app');
+  if (body != null) {
+    return html2canvas(body).then((canvas) => {
+      window.canvas = canvas;
+      if (document.body) {
+        document.body.style.overflow = 'hidden';
+      }
+      const context = canvas.getContext('2d');
+      const image = context.getImageData(0, 0, canvas.width, canvas.height);
+      body.replaceWith(canvas);
+      return {
+        canvas,
+        context,
+        image,
+      };
+    });
+  }
+  return Promise.reject('cant make canvas body');
+}
+
+function warp() {
+  screenfun().then(({ canvas, context, image }) => {
+    canvas.style.width = canvas.width + 'px';
+    canvas.style.height = canvas.height + 'px';
+    canvas.style.transition = '2s';
+    canvas.style.margin = 'auto auto';
+    setTimeout(() => {
+      canvas.style.width = '0px';
+      canvas.style.height = '0px';
+    }, 150);
+  });
+}
+
+window.warp = warp;
