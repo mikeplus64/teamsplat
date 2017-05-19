@@ -1,6 +1,7 @@
 // @flow
 // eslint react/no-array-index-key: "off"
 import React from 'react';
+import { autobind } from 'core-decorators';
 import { connect } from 'react-redux';
 import Box from 'grommet/components/Box';
 import Button from 'grommet/components/Button';
@@ -14,11 +15,10 @@ import AddIcon from 'grommet/components/icons/base/FormAdd';
 import RemoveIcon from 'grommet/components/icons/base/FormClose';
 import { Set } from 'immutable';
 import type { EditorState, DispatchD, MapsState } from '../types';
-import { setRating, deletePlayers } from '../actions';
+import { viewTable, setRating } from '../actions';
 import theme from './Editor.css';
 
 const defaultElo: number = 1600;
-const noPlayers = { toArray: () => [] };
 
 function cmp<T>(a: T, b: T): number {
   if (a === b) { return 0; }
@@ -56,9 +56,8 @@ class Editor extends React.PureComponent {
     error: null,
   };
 
-  constructor() {
-    super();
-    this.onSort = this.onSort.bind(this);
+  componentWillMount() {
+    this.props.dispatch(viewTable(this.props.params.name));
   }
 
   elo(table: string, who: string, map: string, elo: number) {
@@ -160,6 +159,7 @@ class Editor extends React.PureComponent {
     );
   }
 
+  @autobind
   onSort(sortIndex, ascending) {
     this.setState({ sortIndex, ascending });
   }
@@ -214,28 +214,10 @@ class Editor extends React.PureComponent {
                   }
                 }}
               />
-
             </td>
           </TableRow>
         </tbody>
       </Table>
-      <Box pad="medium">
-        <Button
-          critical
-          label="Delete selected players"
-          onClick={() => {
-            const table = this.props.editor.name;
-            const sel: string[] = (this.props.players.get(table) || noPlayers).toArray();
-            if (sel.length === 0) { return; }
-            const ok: boolean = confirm(
-              'Really delete ' + JSON.stringify(sel, null, 2) +
-              '?\nThis cannot be undone.');
-            if (ok) {
-              this.props.dispatch(deletePlayers(table, sel));
-            }
-          }}
-        />
-      </Box>
     </div>);
   }
 }
