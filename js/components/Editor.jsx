@@ -15,7 +15,7 @@ import AddIcon from 'grommet/components/icons/base/FormAdd';
 import RemoveIcon from 'grommet/components/icons/base/FormClose';
 import { Set } from 'immutable';
 import type { EditorState, DispatchD, MapsState } from '../types';
-import { viewTable, setRating } from '../actions';
+import { getMaps, viewTable, setRating } from '../actions';
 import theme from './Editor.css';
 
 const defaultElo: number = 1600;
@@ -57,6 +57,7 @@ class Editor extends React.PureComponent {
   };
 
   componentWillMount() {
+    this.props.dispatch(getMaps);
     this.props.dispatch(viewTable(this.props.params.name));
   }
 
@@ -165,9 +166,11 @@ class Editor extends React.PureComponent {
   }
 
   render() {
+    console.log('ya render head');
     const { types } = this.props.maps;
     const { ascending, sortIndex } = this.state;
     if (types.length === 0) {
+      console.log('types is null');
       return null;
     }
     const [rows, indices] = this.rows();

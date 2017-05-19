@@ -19,7 +19,14 @@ export default class App extends React.PureComponent {
   };
 
   content() {
-    if (this.props.main) { return this.props.main; }
+    console.log({
+      main: this.props.main,
+      children: this.props.children,
+    });
+    if (this.props.main) {
+      console.log('RENDER MAIN');
+      return this.props.main;
+    }
     if (this.props.children) { return this.props.children; }
     return (<Box pad="medium">
       <article key="home">
