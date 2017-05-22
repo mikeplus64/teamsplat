@@ -19,12 +19,7 @@ export default class App extends React.PureComponent {
   };
 
   content() {
-    console.log({
-      main: this.props.main,
-      children: this.props.children,
-    });
     if (this.props.main) {
-      console.log('RENDER MAIN');
       return this.props.main;
     }
     if (this.props.children) { return this.props.children; }

@@ -1,6 +1,5 @@
 // @flow
 import React from 'react';
-import { connect } from 'react-redux';
 import Distribution from 'grommet/components/Distribution';
 import Legend from 'grommet/components/Legend';
 import { makeSeries } from '../teams';

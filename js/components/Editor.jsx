@@ -1,9 +1,8 @@
 // @flow
 // eslint react/no-array-index-key: "off"
 import React from 'react';
-import { autobind } from 'core-decorators';
+import autobind from 'core-decorators/lib/autobind';
 import { connect } from 'react-redux';
-import Box from 'grommet/components/Box';
 import Button from 'grommet/components/Button';
 import Table from 'grommet/components/Table';
 import TableRow from 'grommet/components/TableRow';
@@ -166,11 +165,9 @@ class Editor extends React.PureComponent {
   }
 
   render() {
-    console.log('ya render head');
     const { types } = this.props.maps;
     const { ascending, sortIndex } = this.state;
     if (types.length === 0) {
-      console.log('types is null');
       return null;
     }
     const [rows, indices] = this.rows();

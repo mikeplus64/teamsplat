@@ -1,5 +1,5 @@
 // @flow
-import { autobind } from 'core-decorators';
+import autobind from 'core-decorators/lib/autobind';
 import { connect } from 'react-redux';
 import React from 'react';
 import SearchInput from 'grommet/components/SearchInput';
