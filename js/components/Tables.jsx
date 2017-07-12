@@ -1,25 +1,26 @@
+// @flow
 import React from 'react';
 import { connect } from 'react-redux';
-import type { DispatchD } from '../types';
-import { getTables } from '../actions';
 import List from 'grommet/components/List';
 import ListItem from 'grommet/components/ListItem';
+import type { DispatchD } from '../types';
+import { getTables } from '../actions';
 
 const nothing = {};
 class Tables extends React.PureComponent {
   props: {
-    children: ReactElement,
     dispatch: DispatchD,
     router: { push: (url: string) => void },
   };
 
   state: {
     page: number,
-    maxPage?: number,
+    maxPage: ?number,
     tables: { [page: number]: string[] },
   } = {
     page: 0,
-    tables: [],
+    maxPage: null,
+    tables: {},
   };
 
   getPage(page) {
@@ -40,7 +41,7 @@ class Tables extends React.PureComponent {
 
   getMore() {
     const { page, maxPage } = this.state;
-    if (maxPage != null || page < maxPage) {
+    if (maxPage != null && page < maxPage) {
       this.getPage(page + 1);
     }
   }

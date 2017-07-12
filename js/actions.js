@@ -1,6 +1,13 @@
 /* @flow */
+import Fuse from '../node_modules/fuse.js/dist/fuse';
 import api from './api';
-import type { ThunkActionR, Rating, StartLoading, StopLoading, SearchFor, SetPassword } from './types';
+import type {
+  PlayerName,
+  ThunkActionR, Rating, StartLoading,
+  StopLoading, SearchFor, SelectMap,
+  Team, SetPassword,
+} from './types';
+import findBestTeams from './teams';
 
 export const getMaps: ThunkActionR<Promise<string[]>> = (dispatch, getState) => {
   const { maps } = getState();
@@ -103,3 +110,78 @@ export function searchFor(query: string): SearchFor {
 export function setPassword(table: string, password: string): SetPassword {
   return { type: 'SET_PASSWORD', table, password };
 }
+
+export function selectMap(map: string): SelectMap {
+  return { type: 'SELECT_MAP', map };
+}
+
+const fuse = new Fuse([], {
+  shouldSort: true,
+  includeScore: false,
+  threshold: 0.6,
+  location: 0,
+  distance: 100,
+  maxPatternLength: 32,
+  minMatchCharLength: 1,
+  keys: [0],
+});
+
+const splitter = /[ ,]+/;
+export const selectNames: (table: string, names: string) => ThunkActionR<void> =
+  (tableName, quicknames) => (dispatch, getState) => {
+    dispatch({ type: 'DROP_SELECTION' });
+    const names: string[] = quicknames.trim().split(splitter);
+    if (names.length === 0) { return; }
+
+    const { table } = getState().editor;
+
+    fuse.set(Array.from(table.entries()));
+    function bestMatch(query: string): ?PlayerName {
+      const nice = query.trim();
+      if (nice === '') { return null; }
+      const r = fuse.search(nice);
+      if (r.length > 0) {
+        const name = r[0][0];
+        return name;
+      }
+      return null;
+    }
+    names.forEach((name) => {
+      const player: ?string = bestMatch(name);
+      if (player != null) {
+        dispatch({ type: 'ADD_PLAYER_TO_TEAMS', table: tableName, player });
+      }
+    });
+  };
+
+
+export const computeTeams: ThunkActionR<Promise<[?Team, ?Team]>> =
+  (dispatch, getState) => new Promise((resolve, reject) => {
+    const {
+      players,
+      editor: {
+        name: tableName,
+        table,
+      },
+      maps: {
+        selected,
+      },
+    } = getState();
+    if (selected != null) {
+      const map: string = selected;
+      const ratings: Rating[] = [];
+      players.get(tableName).forEach((who) => {
+        ratings.push({
+          elo: table.getIn([who, map]) || 1600,
+          who,
+          map,
+          table: tableName,
+        });
+      });
+      const teams = findBestTeams(ratings, 'total');
+      dispatch({ type: 'COMPUTED_TEAMS', teams });
+      resolve(teams);
+    }
+    reject('No selection');
+  });
+

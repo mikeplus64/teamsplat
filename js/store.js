@@ -4,7 +4,7 @@ import { createLogger } from 'redux-logger';
 import type { Store } from 'redux';
 import thunk from 'redux-thunk';
 import { autoRehydrate, persistStore } from 'redux-persist';
-import immutableTransform from 'redux-persist-transform-immutable'
+import immutableTransform from 'redux-persist-transform-immutable';
 import type { Reducer } from './types';
 import editor from './reducers/editor';
 import maps from './reducers/maps';
@@ -31,7 +31,7 @@ export default function connect<T>(resolve: (store: Store) => T): T {
   }
   const store = createStore(reducer, compose(...middlewares));
   persistStore(store, {
-    whitelist: ['players', 'passwords'],
+    whitelist: ['players', 'maps', 'passwords'],
     transforms: [immutableTransform({
       whitelist: ['players', 'passwords'],
     })],

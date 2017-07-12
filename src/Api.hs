@@ -27,6 +27,7 @@
 {-# LANGUAGE TypeOperators              #-}
 module Api where
 import           Conduit
+import           Control.Lens                         (anyOf, to, _Just)
 import qualified Control.Lens                         as L
 import           Control.Monad                        (unless, void)
 import           Control.Monad.IO.Class               (liftIO)
@@ -56,6 +57,7 @@ import           Network.Wai.Middleware.RequestLogger
 import           Servant
 import           Servant.JS
 import           System.Environment
+import           Text.Read                            (readMaybe)
 import           Web.Heroku.Postgres                  (dbConnParams)
 
 type Player = Text
@@ -290,9 +292,7 @@ js = jsForAPI
 
 start :: IO ()
 start = do
-  let
-    dev :: Bool
-    dev = True
+  dev <- anyOf (_Just . to readMaybe . _Just) id <$> lookupEnv "USE_SQLITE"
   params <- do
     url <- lookupEnv "DATABASE_URL"
     case url of
@@ -304,4 +304,4 @@ start = do
         , ("dbname", "teamsplat")
         , ("password", "")
         ]
-  Warp.runEnv 8080 . logStdoutDev =<< makeApplication dev params
+  Warp.runEnv 80 . logStdoutDev =<< makeApplication dev params

@@ -18,6 +18,8 @@ export type Stats<T> = {|
   of: T[],
 |};
 
+export type Team = Stats<Rating>;
+
 export type OldStyleTable = {|
   [name: string]: {|
     id: number,
@@ -41,6 +43,10 @@ export type StartLoading = {| type: 'START_LOADING', table: string |};
 export type StopLoading = {| type: 'STOP_LOADING', table: string |};
 export type SearchFor = {| type: 'SEARCH_FOR', query: string |};
 export type SetPassword = {| type: 'SET_PASSWORD', table: string, password: string |};
+export type DropSelection = {| type: 'DROP_SELECTION' |};
+export type SelectMap = {| type: 'SELECT_MAP', map: string |};
+export type ComputedTeams = {| type: 'COMPUTED_TEAMS', teams: [?Team, ?Team] |};
+
 export type Action
   = SetPlayer
   | ViewTable
@@ -53,6 +59,10 @@ export type Action
   | StopLoading
   | SearchFor
   | SetPassword
+  | DropSelection
+  | SearchFor
+  | SelectMap
+  | ComputedTeams
   ;
 
 export type PlayerName = string;
@@ -60,7 +70,9 @@ export type MapType = string;
 export type EditorTable = Map<PlayerName, Map<MapType, number>>;
 
 export type PlayersState = Map<string, Set<string>>;
+
 export type TablesState = Map<string, Set<Rating>>;
+
 export type EditorState = {
   name: string,
   table: EditorTable,
@@ -68,14 +80,29 @@ export type EditorState = {
   query: string,
   searchedTable: EditorTable,
 };
+
 export type PasswordState = Map<string, string>;
-export type MapsState = {| types: string[], record: Record<{ [map: string]: number }> |};
+
+export type MapsState = {|
+  types: string[],
+  record: Record<{ [map: string]: number }>,
+  selected: ?string,
+|};
+
+export type TeamsState = {
+  visible: boolean,
+  fresh: boolean,
+  teams: ?[?Team, ?Team],
+}
+
 export type State = {|
   players: PlayersState,
   tables: TablesState,
   editor: EditorState,
   maps: { types: string[], record: Record<{ [map: string]: number }> },
   passwords: PasswordState,
+  maps: MapsState,
+  teams: TeamsState,
 |};
 
 export type Reducer = (state: State, action: Action) => State;

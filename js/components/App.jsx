@@ -19,7 +19,9 @@ export default class App extends React.PureComponent {
   };
 
   content() {
-    if (this.props.main) { return this.props.main; }
+    if (this.props.main) {
+      return this.props.main;
+    }
     if (this.props.children) { return this.props.children; }
     return (<Box pad="medium">
       <article key="home">
@@ -47,7 +49,7 @@ export default class App extends React.PureComponent {
             <Header pad="small" size="small">
               <Title truncate={false}> <span style={{ fontSize: '1.2rem' }}>Teamsplatter</span> </Title>
             </Header>
-            <Menu primary size="small" pad="xsmall">
+            <Menu primary size="small">
               <Anchor path="/" label="Home" />
               <Anchor path="/table" label="New table" />
               <Anchor path="/tables" label="Tables" />

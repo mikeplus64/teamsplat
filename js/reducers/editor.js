@@ -23,7 +23,7 @@ function buildTable(ratings: Rating[]): EditorTable {
   });
 }
 
-function runQuery(table: EditorTable, query: string): EditorTable {
+export function runQuery(table: EditorTable, query: string): EditorTable {
   const nice = query.trim();
   if (nice === '') { return table; }
   const uglyTable = Array.from(table.entries());

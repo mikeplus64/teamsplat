@@ -1,7 +1,7 @@
 /* @flow */
 import React from 'react';
 import { connect } from 'react-redux';
-import { keys } from 'lodash';
+import keys from 'lodash/keys';
 import Box from 'grommet/components/Box';
 import Button from 'grommet/components/Button';
 import Form from 'grommet/components/Form';
