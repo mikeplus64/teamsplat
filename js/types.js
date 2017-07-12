@@ -40,6 +40,7 @@ export type DeletedPlayers = {| type: 'DELETED_PLAYERS', table: string, players:
 export type StartLoading = {| type: 'START_LOADING', table: string |};
 export type StopLoading = {| type: 'STOP_LOADING', table: string |};
 export type SearchFor = {| type: 'SEARCH_FOR', query: string |};
+export type SetPassword = {| type: 'SET_PASSWORD', table: string, password: string |};
 export type Action
   = SetPlayer
   | ViewTable
@@ -50,7 +51,9 @@ export type Action
   | DeletedPlayers
   | StartLoading
   | StopLoading
-  | SearchFor;
+  | SearchFor
+  | SetPassword
+  ;
 
 export type PlayerName = string;
 export type MapType = string;
@@ -65,13 +68,14 @@ export type EditorState = {
   query: string,
   searchedTable: EditorTable,
 };
-
+export type PasswordState = Map<string, string>;
 export type MapsState = {| types: string[], record: Record<{ [map: string]: number }> |};
 export type State = {|
   players: PlayersState,
   tables: TablesState,
   editor: EditorState,
   maps: { types: string[], record: Record<{ [map: string]: number }> },
+  passwords: PasswordState,
 |};
 
 export type Reducer = (state: State, action: Action) => State;

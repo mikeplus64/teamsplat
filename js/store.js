@@ -10,6 +10,7 @@ import editor from './reducers/editor';
 import maps from './reducers/maps';
 import tables from './reducers/tables';
 import players from './reducers/players';
+import passwords from './reducers/passwords';
 
 export default function connect<T>(resolve: (store: Store) => T): T {
   const logger = createLogger();
@@ -18,6 +19,7 @@ export default function connect<T>(resolve: (store: Store) => T): T {
     maps,
     tables,
     players,
+    passwords,
   });
 
   const middlewares = [
@@ -29,9 +31,9 @@ export default function connect<T>(resolve: (store: Store) => T): T {
   }
   const store = createStore(reducer, compose(...middlewares));
   persistStore(store, {
-    whitelist: ['players'],
+    whitelist: ['players', 'passwords'],
     transforms: [immutableTransform({
-      whitelist: ['players'],
+      whitelist: ['players', 'passwords'],
     })],
   });
   return resolve(store);
