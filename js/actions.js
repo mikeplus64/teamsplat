@@ -86,18 +86,21 @@ export const viewTable: (table: string) => ThunkActionR<Promise<Rating[]>> =
 export const deletePlayers: (table: string, players: string[]) => ThunkActionR<Promise<any>> =
   (table, players) => (dispatch, getState) => {
     const password = getState().passwords.get(table);
-    return Promise.all(players.map(player => new Promise((resolve, reject) =>
-      api.postDeleteByPasswordByTableByPlayer(
-        password,
-        table,
-        player,
-        either(reject, () => {
-          dispatch({ type: 'REMOVE_PLAYER_FROM_TEAMS', table, player });
-          dispatch({ type: 'DELETED_PLAYERS', table, players });
-          resolve();
-        }),
-        reject,
-      ))));
+    if (password != null && password.text && password.isSet) {
+      return Promise.all(players.map(player => new Promise((resolve, reject) =>
+        api.postDeleteByPasswordByTableByPlayer(
+          password,
+          table,
+          player,
+          either(reject, () => {
+            dispatch({ type: 'REMOVE_PLAYER_FROM_TEAMS', table, player });
+            dispatch({ type: 'DELETED_PLAYERS', table, players });
+            resolve();
+          }),
+          reject,
+        ))));
+    }
+    return Promise.reject();
   };
 
 export function startLoading(table: string): StartLoading {
