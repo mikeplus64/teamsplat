@@ -4,14 +4,21 @@ import { connect } from 'react-redux';
 import React from 'react';
 import SearchInput from 'grommet/components/SearchInput';
 import TextInput from 'grommet/components/TextInput';
-import Label from 'grommet/components/Label';
 import Button from 'grommet/components/Button';
 import Menu from 'grommet/components/Menu';
 import Select from 'grommet/components/Select';
 import Layer from 'grommet/components/Layer';
 import Actions from 'grommet/components/icons/base/Menu';
 import type { DispatchD, MapsState, Team } from '../types';
-import { searchFor, setPassword, selectNames, deletePlayers, selectMap, computeTeams } from '../actions';
+import {
+  searchFor,
+  setPassword,
+  setTablePassword,
+  selectNames,
+  deletePlayers,
+  selectMap,
+  computeTeams,
+} from '../actions';
 import Teams from './Teams.jsx';
 import theme from './TableControls.css';
 
@@ -19,7 +26,7 @@ class TableControls extends React.PureComponent {
   props: {
     query: string,
     table: string,
-    password: string,
+    password: { text: string, isSet: boolean },
     players: string[],
     maps: MapsState,
     dispatch: DispatchD,
@@ -68,25 +75,40 @@ class TableControls extends React.PureComponent {
   }
 
   render() {
+    const { isSet: hasAuth, text: password } = this.props.password;
     return (
       <Menu
         className={theme.panel}
         primary={false}
         size="small"
       >
-        <div style={{ padding: '0 1em' }}>
-          <Label size="small"> Password </Label>
-        </div>
-        <div style={{ padding: '0 1em' }}>
+        {hasAuth ? null : [
+          <hr key="auth-hr" />,
+          <label key="auth-label" className={theme.label} htmlFor="table-password">
+            Shared table password
+          </label>,
+          <p key="auth-help"className={theme.help}>
+            If you can see this it means you cannot edit anything in this table.
+          </p>,
           <TextInput
+            key="auth-text-input"
+            id="table-password"
             className={theme.input}
-            placeHolder="Password ..."
-            value={this.props.password}
+            placeHolder="Password"
+            value={password}
             onDOMChange={(ev) => {
               this.props.dispatch(setPassword(this.props.table, ev.target.value));
             }}
-          />
-        </div>
+          />,
+          <Button
+            key="auth-button"
+            critical
+            label="Set password"
+            onClick={() => {
+              this.props.dispatch(setTablePassword(this.props.table));
+            }}
+          />,
+        ]}
         <Layer
           align="center"
           hidden={!this.state.viewingTeams}
@@ -178,7 +200,7 @@ export default connect(({
   table: name,
   query,
   players: (ps => (ps ? ps.toArray() : noPlayers))(players.get(name)),
-  password: passwords.get(name),
+  password: passwords.get(name, { text: '', isSet: false }),
   maps,
 }), null)(TableControls);
 

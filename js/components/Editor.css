@@ -109,3 +109,11 @@ td {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
+
+.waiting {
+  background-color: rgba(255,0,0,0.2) !important;
+}
+
+.failed {
+  background-color: red !important;
+}

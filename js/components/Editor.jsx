@@ -12,8 +12,9 @@ import Label from 'grommet/components/Label';
 import EditIcon from 'grommet/components/icons/base/Edit';
 import AddIcon from 'grommet/components/icons/base/FormAdd';
 import RemoveIcon from 'grommet/components/icons/base/FormClose';
-import { Set } from 'immutable';
-import type { EditorState, DispatchD, MapsState } from '../types';
+import { Set, Map } from 'immutable';
+import debounce from 'lodash/debounce';
+import type { EditorState, DispatchD, MapsState, Rating } from '../types';
 import { getMaps, viewTable, setRating } from '../actions';
 import theme from './Editor.css';
 
@@ -33,7 +34,6 @@ function comparison<T, V>(
   const asc = ascending ? 1 : -1;
   return (a, b) => asc * cmp(column(a), column(b));
 }
-
 class Editor extends React.PureComponent {
   props: {
     dispatch: DispatchD,
@@ -48,11 +48,15 @@ class Editor extends React.PureComponent {
     ascending: boolean,
     sortIndex: number,
     error: ?string,
+    waiting: Map<string, Set<string>>,
+    failed: Map<string, Set<string>>,
   } = {
     hover: null,
     ascending: true,
     sortIndex: 0,
     error: null,
+    waiting: new Map(),
+    failed: new Map(),
   };
 
   componentWillMount() {
@@ -60,10 +64,30 @@ class Editor extends React.PureComponent {
     this.props.dispatch(viewTable(this.props.params.name));
   }
 
+  debouncedSetRating: <A> (
+    rating: Rating,
+    resolve: (v: any) => any,
+    reject: (v: any) => any,
+  ) => void = debounce(
+    (r, resolve, reject) => this.props.dispatch(setRating(r)).then(resolve, reject),
+    200,
+  );
+
+  eloCls(who: string, map: string) {
+    const { waiting, failed } = this.state;
+    if (waiting.get(who, new Set()).has(map)) {
+      return theme.waiting;
+    }
+    if (failed.get(who, new Set()).has(map)) {
+      return theme.failed;
+    }
+    return '';
+  }
+
   elo(table: string, who: string, map: string, elo: number) {
     return (
       <input
-        className={`${theme.eloEditor} ${theme.p0}`}
+        className={`${theme.eloEditor} ${theme.p0} ${this.eloCls(who, map)}`}
         type="number"
         defaultValue={elo}
         onMouseEnter={() => this.setState({ hover: map })}
@@ -71,12 +95,17 @@ class Editor extends React.PureComponent {
         onChange={(ev) => {
           const parse = parseInt(ev.target.value, 10);
           if (ev.target.value !== '' && parse) {
-            this.props.dispatch(setRating({
+            this.setState({ waiting: this.state.waiting.set(who, Set.of(map)) });
+            this.debouncedSetRating({
               table,
               map,
               who,
               elo: parse,
-            }));
+            }, () => {
+              this.setState(s => ({ waiting: s.waiting.update(who, t => t.remove(map)) }));
+            }, () => {
+              this.setState(s => ({ failed: s.failed.update(who, t => t.remove(map)) }));
+            });
           }
         }}
       />
@@ -85,7 +114,11 @@ class Editor extends React.PureComponent {
 
   rows() {
     const { ascending, sortIndex } = this.state;
-    const { editor: { searchedTable: table, name }, maps: { types }, players: allPlayers } = this.props;
+    const {
+      editor: { searchedTable: table, name },
+      maps: { types },
+      players: allPlayers,
+    } = this.props;
     const players = allPlayers.get(name) || new Set();
     const indices: number[] = [];
 

@@ -1,4 +1,4 @@
-/* @flow */
+// @flow
 import Fuse from '../node_modules/fuse.js/dist/fuse';
 import api from './api';
 import type {
@@ -30,43 +30,50 @@ export const getTable: (table: string) => ThunkActionR<Promise<Rating[]>> =
     }, reject);
   });
 
+type Either<A, B> = {| Left: A |} | {| Right: B |};
+
+function either<A, B, C>(
+  left: (l: A) => C,
+  right: (r: B) => C,
+): Either<A, B> => ?C {
+  return (data) => {
+    if (data.Left) {
+      return left(data.Left);
+    }
+    if (data.Right) {
+      return right(data.Right);
+    }
+    return null;
+  };
+}
+
 export const setRating: (rating: Rating) => ThunkActionR<Promise<void>> =
   (rating: Rating) => (dispatch, getState) => new Promise((resolve, reject) => {
     const { table, who, map, elo } = rating;
     const password = getState().passwords.get(table);
-    function send(tryNo: number) {
-      if (tryNo > 10) {
-        console.error('setRating failed');
-        reject();
-      }
-      if (tryNo > 0) {
-        console.warn('retry setRating', tryNo, table, who, map, elo);
-      }
+    if (password != null && password.text && password.isSet) {
       api.postRateByPasswordByTableByPlayerByMapByEloByCaveat(
-        password,
+        password.text,
         table,
         who,
         map,
         elo,
         'nothing',
-        () => {
+        either(reject, () => {
           dispatch({ type: 'SET_PLAYER', rating });
           resolve();
-        },
-        (r) => {
-          console.warn('setRating failed with', r);
-          send(tryNo + 1);
-        },
+        }),
+        reject,
       );
+    } else {
+      reject();
     }
-    send(0);
   });
 
 export const getTables: (page: number) => ThunkActionR<Promise<string[]>> =
   page => () => new Promise((resolve, reject) => {
     api.getTablesByPage(page, resolve, reject);
   });
-
 
 export const viewTable: (table: string) => ThunkActionR<Promise<Rating[]>> =
   table => (dispatch, getState) =>
@@ -79,21 +86,19 @@ export const viewTable: (table: string) => ThunkActionR<Promise<Rating[]>> =
 export const deletePlayers: (table: string, players: string[]) => ThunkActionR<Promise<any>> =
   (table, players) => (dispatch, getState) => {
     const password = getState().passwords.get(table);
-    return Promise.all(players.map(function hack(player, tryNo = 0) {
-      if (tryNo > 10) {
-        return Promise.reject();
-      }
-      return (
-        new Promise((resolve, reject) =>
-          api.postDeleteByPasswordByTableByPlayer(password, table, player, resolve, reject))
-        .then(() => {
+    return Promise.all(players.map(player => new Promise((resolve, reject) =>
+      api.postDeleteByPasswordByTableByPlayer(
+        password,
+        table,
+        player,
+        either(reject, () => {
           dispatch({ type: 'REMOVE_PLAYER_FROM_TEAMS', table, player });
           dispatch({ type: 'DELETED_PLAYERS', table, players });
-        }, () => hack(player, tryNo + 1))
-      );
-    }));
+          resolve();
+        }),
+        reject,
+      ))));
   };
-
 
 export function startLoading(table: string): StartLoading {
   return { type: 'START_LOADING', table };
@@ -106,6 +111,33 @@ export function stopLoading(table: string): StopLoading {
 export function searchFor(query: string): SearchFor {
   return { type: 'SEARCH_FOR', query };
 }
+
+export const setTablePassword: (table: string) => ThunkActionR<Promise<any>> =
+  (table: string) => (dispatch, getState) => new Promise((resolve, reject) => {
+    const password = getState().passwords.get(table);
+    if (password != null) {
+      const { text, isSet } = password;
+      if (isSet === true) {
+        reject();
+        return;
+      }
+      api.getSet_passwordByTableByPassword(
+        table,
+        text,
+        (r) => {
+          if (r === true) {
+            dispatch({ type: 'SET_TABLE_PASSWORD', table });
+            resolve();
+          } else {
+            reject();
+          }
+        },
+        reject,
+      );
+    } else {
+      reject();
+    }
+  });
 
 export function setPassword(table: string, password: string): SetPassword {
   return { type: 'SET_PASSWORD', table, password };
@@ -132,9 +164,7 @@ export const selectNames: (table: string, names: string) => ThunkActionR<void> =
     dispatch({ type: 'DROP_SELECTION' });
     const names: string[] = quicknames.trim().split(splitter);
     if (names.length === 0) { return; }
-
     const { table } = getState().editor;
-
     fuse.set(Array.from(table.entries()));
     function bestMatch(query: string): ?PlayerName {
       const nice = query.trim();

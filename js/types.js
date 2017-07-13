@@ -43,6 +43,7 @@ export type StartLoading = {| type: 'START_LOADING', table: string |};
 export type StopLoading = {| type: 'STOP_LOADING', table: string |};
 export type SearchFor = {| type: 'SEARCH_FOR', query: string |};
 export type SetPassword = {| type: 'SET_PASSWORD', table: string, password: string |};
+export type SetTablePassword = {| type: 'SET_TABLE_PASSWORD', table: string |};
 export type DropSelection = {| type: 'DROP_SELECTION' |};
 export type SelectMap = {| type: 'SELECT_MAP', map: string |};
 export type ComputedTeams = {| type: 'COMPUTED_TEAMS', teams: [?Team, ?Team] |};
@@ -59,6 +60,7 @@ export type Action
   | StopLoading
   | SearchFor
   | SetPassword
+  | SetTablePassword
   | DropSelection
   | SearchFor
   | SelectMap
@@ -81,7 +83,10 @@ export type EditorState = {
   searchedTable: EditorTable,
 };
 
-export type PasswordState = Map<string, string>;
+export type PasswordState = Map<string, {
+  text: string,
+  isSet: boolean,
+}>;
 
 export type MapsState = {|
   types: string[],

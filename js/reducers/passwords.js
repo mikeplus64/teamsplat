@@ -7,8 +7,21 @@ export default function maps(
   action: Action,
 ): PasswordState {
   switch (action.type) {
-    case 'SET_PASSWORD': return state.set(action.table, action.password);
-    default: return state;
+    case 'SET_PASSWORD': return state.set(action.table, {
+      text: action.password,
+      isSet: false,
+    });
+
+    case 'SET_TABLE_PASSWORD': return state.update(
+      action.table,
+      { text: '', isSet: true },
+      ({ text }) => ({
+        isSet: true,
+        text,
+      }));
+
+    default:
+      return state;
   }
 }
 

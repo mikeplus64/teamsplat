@@ -18,6 +18,7 @@
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE NamedFieldPuns             #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE RecordWildCards            #-}
@@ -27,6 +28,7 @@
 {-# LANGUAGE TypeOperators              #-}
 module Api where
 import           Conduit
+import           Control.Applicative
 import           Control.Lens                         (anyOf, to, _Just)
 import qualified Control.Lens                         as L
 import           Control.Monad                        (unless, void)
@@ -35,6 +37,7 @@ import           Control.Monad.Logger
 import qualified Data.Aeson.TH                        as JSON
 import           Data.Char
 import           Data.Int
+import           Data.Maybe
 import           Data.Proxy
 import           Data.Text                            (Text)
 import qualified Data.Text                            as T
@@ -56,7 +59,7 @@ import qualified Network.Wai.Handler.Warp             as Warp (runEnv)
 import           Network.Wai.Middleware.RequestLogger
 import           Servant
 import           Servant.JS
-import           System.Environment
+import           System.Environment                   (lookupEnv, setEnv)
 import           Text.Read                            (readMaybe)
 import           Web.Heroku.Postgres                  (dbConnParams)
 
@@ -88,6 +91,13 @@ data Rating = Rating
 JSON.deriveToJSON JSON.defaultOptions
   { JSON.fieldLabelModifier = L.over L._head toLower . drop 6 }
   ''Rating
+
+data AuthFailure
+  = NoPassword
+  | InvalidPassword
+  deriving (Show, Eq)
+
+JSON.deriveToJSON JSON.defaultOptions ''AuthFailure
 
 -- db shit
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
@@ -166,26 +176,25 @@ getPlayers page = map unValue <$> select (distinct (from (\r -> do
   limit pageSize
   return (r^.RatingsWho))))
 
-requireTableAuth :: Maybe PasswordText -> Text -> SqliteM ()
-requireTableAuth Nothing   table = fail "Must supply a table password."
-requireTableAuth (Just pw) table = do
+withTableAuth :: Maybe PasswordText
+              -> Text
+              -> SqliteM a
+              -> SqliteM (Either AuthFailure a)
+withTableAuth Nothing _table _f = return (Left NoPassword)
+withTableAuth (Just pw) table f = do
   actualPw <- P.getBy (UniquePassword table)
   case actualPw of
-    Just (Entity _ pass)
-      | pw == passwordText pass ->
-        return ()
-    _ ->
-      fail "Invalid or unset password."
+    Just (Entity _ pass) | pw == passwordText pass -> Right <$> f
+    _ -> return (Left InvalidPassword)
 
-setRatings :: Maybe PasswordText
+setRatings :: PasswordText
            -> Text
            -> Player
            -> MapType
            -> Word
            -> Maybe Text
-           -> SqliteM ()
-setRatings mpw table player maptype elo _caveat = do
-  requireTableAuth mpw table
+           -> SqliteM (Either AuthFailure ())
+setRatings mpw table player maptype elo _caveat = withTableAuth (Just mpw) table $ do
   unless (maptype `elem` mapTypes) (fail "Invalid map type")
   time <- liftIO getCurrentTime
   mrs  <- P.getBy (UniqueRatings table player maptype)
@@ -205,19 +214,26 @@ setRatings mpw table player maptype elo _caveat = do
       , ratingsPastRates = []
       }
 
-deletePlayer :: Maybe PasswordText -> Text -> Player -> SqliteM ()
-deletePlayer mpw table player = do
-  requireTableAuth mpw table
+deletePlayer :: PasswordText -> Text -> Player -> SqliteM (Either AuthFailure ())
+deletePlayer mpw table player = withTableAuth (Just mpw) table $
   P.deleteWhere [RatingsTable P.==. table, RatingsWho P.==. player]
 
-setTablePassword :: Text -> PasswordText -> SqliteM ()
-setTablePassword table pass =
-  P.insertUnique Password{ passwordTable = table
-                         , passwordText = pass
-                         }
-  >>= \m -> case m of
-    Just _  -> return ()
-    Nothing -> fail "Already set a password."
+setTablePassword :: Text -> PasswordText -> SqliteM Bool
+setTablePassword table pass = do
+  m <- P.insertUnique Password
+    { passwordTable = table
+    , passwordText = pass
+    }
+  case m of
+    Just _ -> return True
+    Nothing -> do
+      ep <- P.getBy (UniquePassword table)
+      case ep of
+        Just Entity{entityVal = Password{passwordText}} ->
+          return (pass == passwordText)
+        _ ->
+          -- Password apparently existed before, but could not get it now
+          return False
 
 --------------------------------------------------------------------------------
 
@@ -231,20 +247,23 @@ type Api =
     :> Capture "player" Text
     :> Get '[JSON] [Rating]
   :<|> "rate"
-    :> Capture "password" (Maybe PasswordText)
+    :> Capture "password" PasswordText
     :> Capture "table" Text
     :> Capture "player" Player
     :> Capture "map" MapType
     :> Capture "elo" Word
     :> Capture "caveat" (Maybe Text)
-    :> Post '[JSON] Bool
+    :> Post '[JSON] (Either AuthFailure ())
   :<|> "delete"
-    :> Capture "password" (Maybe PasswordText)
+    :> Capture "password" PasswordText
     :> Capture "table" Text
     :> Capture "player" Player
-    :> Post '[JSON] Bool
+    :> Post '[JSON] (Either AuthFailure ())
   :<|> "table"  :> Capture "table" Text :> Get '[JSON] [Rating]
-  :<|> "set_password" :> Capture "table" Text :> Capture "password" PasswordText :> Get '[JSON] ()
+  :<|> "set_password"
+    :> Capture "table" Text
+    :> Capture "password" PasswordText
+    :> Get '[JSON] Bool
 
 type ApiWithStatic = Api :<|> Raw
 
@@ -258,11 +277,9 @@ server pool =
   :<|> return mapTypes
   :<|> (\table player -> sql (ratingHistory table player))
   :<|> (\pw table player maptype elo caveat -> do
-    sql (setRatings pw table player maptype elo caveat)
-    return True)
+    sql (setRatings pw table player maptype elo caveat))
   :<|> (\pw table player -> do
-    sql (deletePlayer pw table player)
-    return True)
+    sql (deletePlayer pw table player))
   :<|> sql . getRatings
   :<|> (\table password -> sql (setTablePassword table password))
   where
@@ -290,9 +307,16 @@ js = jsForAPI
       { moduleName = "module.exports"
       })
 
+startDev :: IO ()
+startDev = do
+  setEnv "USE_SQLITE" "True"
+  setEnv "PORT" "8080"
+  start
+
 start :: IO ()
 start = do
   dev <- anyOf (_Just . to readMaybe . _Just) id <$> lookupEnv "USE_SQLITE"
+  port <- fromMaybe 80 . (readMaybe =<<) <$> lookupEnv "PORT"
   params <- do
     url <- lookupEnv "DATABASE_URL"
     case url of
@@ -304,4 +328,4 @@ start = do
         , ("dbname", "teamsplat")
         , ("password", "")
         ]
-  Warp.runEnv 80 . logStdoutDev =<< makeApplication dev params
+  Warp.runEnv port . logStdoutDev =<< makeApplication dev params

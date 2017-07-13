@@ -56,7 +56,6 @@ module.exports = (env) => {
         },
       }),
       ExtractCssPlugin,
-      new BundleAnalyzerPlugin(),
     ].concat(production ? [
       new webpack.LoaderOptionsPlugin({
         minimize: true,
