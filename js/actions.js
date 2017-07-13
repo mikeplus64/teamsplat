@@ -89,7 +89,7 @@ export const deletePlayers: (table: string, players: string[]) => ThunkActionR<P
     if (password != null && password.text && password.isSet) {
       return Promise.all(players.map(player => new Promise((resolve, reject) =>
         api.postDeleteByPasswordByTableByPlayer(
-          password,
+          password.text,
           table,
           player,
           either(reject, () => {
