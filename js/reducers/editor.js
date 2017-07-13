@@ -14,6 +14,8 @@ const fuse = new Fuse([], {
   keys: [0],
 });
 
+const noList = [];
+
 function buildTable(ratings: Rating[]): EditorTable {
   return new Map().withMutations((mut) => {
     for (let i = 0; i < ratings.length; i += 1) {
@@ -27,9 +29,9 @@ export function runQuery(table: EditorTable, query: string): EditorTable {
   const nice = query.trim();
   if (nice === '') { return table; }
   const uglyTable = Array.from(table.entries());
-  fuse.set(uglyTable);
+  fuse.list = uglyTable;
   const r = new Map(fuse.search(nice));
-  fuse.set([]);
+  fuse.list = noList;
   return r;
 }
 

@@ -13,6 +13,7 @@ export default function maps(
   action: Action,
 ): MapsState {
   switch (action.type) {
+
     case 'GOT_MAPS': {
       const types: string[] = action.types;
       return {

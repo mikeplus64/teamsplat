@@ -75,7 +75,7 @@ class TableControls extends React.PureComponent {
   }
 
   render() {
-    const { isSet: hasAuth, text: password } = this.props.password;
+    const { isSet: hasAuth } = this.props.password;
     return (
       <Menu
         className={theme.panel}
@@ -95,7 +95,11 @@ class TableControls extends React.PureComponent {
             id="table-password"
             className={theme.input}
             placeHolder="Password"
-            value={password}
+            onKeyDown={(ev) => {
+              if (ev.keyCode === 13) {
+                this.props.dispatch(setPassword(this.props.table, ev.target.value));
+              }
+            }}
             onDOMChange={(ev) => {
               this.props.dispatch(setPassword(this.props.table, ev.target.value));
             }}
@@ -121,7 +125,9 @@ class TableControls extends React.PureComponent {
           />
         </Layer>
         <hr />
-        <label className={theme.label} htmlFor="search"> Search </label>
+        <label className={theme.label} htmlFor="search">
+          Search
+        </label>
         <SearchInput
           id="search"
           className={theme.search}
@@ -142,7 +148,14 @@ class TableControls extends React.PureComponent {
           id="quicksel"
           className={theme.quick}
           value={this.state.quickNames}
-          onDOMChange={ev => this.setState({ quickNames: ev.target.value })}
+          onDOMChange={(ev) => {
+            this.setState({ quickNames: ev.target.value });
+          }}
+          onKeyDown={(ev) => {
+            if (ev.keyCode === 13 && this.state.quickNames !== '') {
+              this.quickSelect();
+            }
+          }}
           placeHolder="Names ..."
         />
         <Button label="Quick select" onClick={this.state.quickNames !== '' ? this.quickSelect : undefined} />

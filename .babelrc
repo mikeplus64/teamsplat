@@ -13,6 +13,9 @@
         "transform-flow-strip-types",
         "transform-react-constant-elements",
         "transform-react-inline-elements",
+        ["transform-react-binding", {
+          "memoizeModule": "memoizerific",
+        }],
       ],
     },
   },

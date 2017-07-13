@@ -168,7 +168,7 @@ export const selectNames: (table: string, names: string) => ThunkActionR<void> =
     const names: string[] = quicknames.trim().split(splitter);
     if (names.length === 0) { return; }
     const { table } = getState().editor;
-    fuse.set(Array.from(table.entries()));
+    fuse.list = Array.from(table.entries());
     function bestMatch(query: string): ?PlayerName {
       const nice = query.trim();
       if (nice === '') { return null; }

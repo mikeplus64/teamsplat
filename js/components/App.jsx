@@ -47,7 +47,11 @@ export default class App extends React.PureComponent {
         <Split flex="right">
           <Sidebar colorIndex="grey-1-a" size="small">
             <Header pad="small" size="small">
-              <Title truncate={false}> <span style={{ fontSize: '1.2rem' }}>Teamsplatter</span> </Title>
+              <Title truncate={false}>
+                <span style={{ fontSize: '1.2rem' }}>
+                  Teamsplatter
+                </span>
+              </Title>
             </Header>
             <Menu primary size="small">
               <Anchor path="/" label="Home" />
