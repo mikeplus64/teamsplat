@@ -60,7 +60,7 @@ export default class App extends React.PureComponent {
               {this.props.sidebar}
             </Menu>
           </Sidebar>
-          <Box>
+          <Box full>
             {this.content()}
           </Box>
         </Split>

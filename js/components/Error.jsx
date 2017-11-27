@@ -1,7 +1,9 @@
 // @flow
+import React from 'react';
+import Layer from 'grommet/components/Layer';
 import theme from './Error.css';
 
-export const errors = [
+const errors = [
   <blockquote className={theme.flamboyantError}>
     <br />
     Flamboyant System Error
@@ -35,9 +37,9 @@ export const errors = [
     <div className={theme.tsondDialog}>
       <div className={theme.ohChild}>
         <big>
-          <img src="http://www.hrwiki.org/w/images/thumb/5/51/NO_symbol_red_w-gray.png/50px-NO_symbol_red_w-gray.png" width="50" height="50" />
+          <img alt="no" src="http://www.hrwiki.org/w/images/thumb/5/51/NO_symbol_red_w-gray.png/50px-NO_symbol_red_w-gray.png" width="50" height="50" />
           <b> Oh, Child!</b>
-          <img src="http://www.hrwiki.org/w/images/thumb/3/3a/warning_symbol_yellow_w-gray.png/50px-warning_symbol_yellow_w-gray.png" width="50" height="47" />
+          <img alt="warning" src="http://www.hrwiki.org/w/images/thumb/3/3a/warning_symbol_yellow_w-gray.png/50px-warning_symbol_yellow_w-gray.png" width="50" height="47" />
         </big>
         <br />It{"'"}s the Teal Screen<br />&nbsp;of Near Death! (TSoND)&nbsp;
       </div>
@@ -45,7 +47,7 @@ export const errors = [
   </blockquote>,
 ];
 
-export function index(error: number): number {
+function nextIndex(error: ?number): number {
   let r = Math.round(Math.random() * (errors.length - 1));
   while (r === error) {
     r = Math.round(Math.random() * (errors.length - 1));
@@ -53,3 +55,37 @@ export function index(error: number): number {
   return r;
 }
 
+class Error extends React.PureComponent {
+  props: {
+    display: ?string,
+    onClose: () => void,
+  };
+
+  index: number = 0;
+  render() {
+    this.index = nextIndex(this.index);
+    return (<div>
+      <Layer
+        hidden={this.props.display == null}
+        align="center"
+        closer
+        flush
+        onClose={this.props.onClose}
+      >
+        <div className={theme.error}>
+          {errors[this.index]}
+          <p className={theme.description}>
+            {this.props.display}
+          </p>
+        </div>
+      </Layer>
+    </div>);
+  }
+}
+
+export default function ErrorMaker() {
+  return (<Error
+    display={this.state.error}
+    onClose={() => this.setState({ error: null })}
+  />);
+}

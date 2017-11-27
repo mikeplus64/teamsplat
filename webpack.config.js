@@ -40,6 +40,9 @@ module.exports = (env) => {
       path: path.resolve(__dirname, 'dist'),
       filename: 'bundle.js',
     },
+    resolve: {
+      extensions: ['.js', '.jsx', '.css'],
+    },
     module: {
       rules: [{
         test: /\.(js|jsx)$/,

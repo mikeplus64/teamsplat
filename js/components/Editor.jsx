@@ -16,9 +16,9 @@ import { Set, Map } from 'immutable';
 import debounce from 'lodash/debounce';
 import type { EditorState, DispatchD, MapsState, Rating } from '../types';
 import { getMaps, viewTable, setRating } from '../actions';
+import ErrorMaker from './Error.jsx';
 import theme from './Editor.css';
-
-const defaultElo: number = 1600;
+import { defaultElo } from '../constants';
 
 function cmp<T>(a: T, b: T): number {
   if (a === b) { return 0; }
@@ -47,16 +47,16 @@ class Editor extends React.PureComponent {
     hover: ?string,
     ascending: boolean,
     sortIndex: number,
-    error: ?string,
     waiting: Map<string, Set<string>>,
     failed: Map<string, Set<string>>,
+    error: ?string,
   } = {
     hover: null,
     ascending: true,
     sortIndex: 0,
-    error: null,
     waiting: new Map(),
     failed: new Map(),
+    error: null,
   };
 
   componentWillMount() {
@@ -102,9 +102,15 @@ class Editor extends React.PureComponent {
               who,
               elo: parse,
             }, () => {
-              this.setState(s => ({ waiting: s.waiting.update(who, t => t.remove(map)) }));
+              this.setState(s => ({
+                waiting: s.waiting.update(who, t => t.remove(map)),
+                error: null,
+              }));
             }, () => {
-              this.setState(s => ({ failed: s.failed.update(who, t => t.remove(map)) }));
+              this.setState(s => ({
+                failed: s.failed.update(who, t => t.remove(map)),
+                error: 'You need to enter the table password to edit the table.',
+              }));
             });
           }
         }}
@@ -220,37 +226,9 @@ class Editor extends React.PureComponent {
         />
         <tbody>
           {rows}
-          <TableRow>
-            <td colSpan={types.length + 1}>
-              <input
-                className={theme.addPlayer}
-                type="text"
-                placeholder="Add a player ..."
-                onKeyPress={(event) => {
-                  if (event.key === 'Enter') {
-                    const target = event.target;
-                    const who: ?string = target.value;
-                    if (
-                      who &&
-                      who !== '' &&
-                      !this.props.editor.table.has(who)
-                    ) {
-                      this.props.dispatch(setRating({
-                        table: this.props.editor.name,
-                        who,
-                        map: types[0],
-                        elo: defaultElo,
-                      })).then(() => {
-                        target.value = '';
-                      });
-                    }
-                  }
-                }}
-              />
-            </td>
-          </TableRow>
         </tbody>
       </Table>
+      {ErrorMaker.call(this)}
     </div>);
   }
 }

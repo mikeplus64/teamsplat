@@ -9,7 +9,7 @@ import Menu from 'grommet/components/Menu';
 import Select from 'grommet/components/Select';
 import Layer from 'grommet/components/Layer';
 import Actions from 'grommet/components/icons/base/Menu';
-import type { DispatchD, MapsState, Team } from '../types';
+import type { DispatchD, MapsState, Team, EditorTable } from '../types';
 import {
   searchFor,
   setPassword,
@@ -18,15 +18,19 @@ import {
   deletePlayers,
   selectMap,
   computeTeams,
+  setRating,
 } from '../actions';
 import Teams from './Teams.jsx';
+import ErrorMaker from './Error.jsx';
 import theme from './TableControls.css';
+import { defaultElo } from '../constants';
 
 class TableControls extends React.PureComponent {
   props: {
     query: string,
     table: string,
     password: { text: string, isSet: boolean },
+    allPlayers: EditorTable,
     players: string[],
     maps: MapsState,
     dispatch: DispatchD,
@@ -36,10 +40,14 @@ class TableControls extends React.PureComponent {
     quickNames: string,
     viewingTeams: boolean,
     teams: ?[?Team, ?Team],
+    newPlayerName: ?string,
+    error: ?string,
   } = {
     quickNames: '',
     viewingTeams: false,
     teams: null,
+    newPlayerName: null,
+    error: null,
   };
 
   @autobind
@@ -50,6 +58,34 @@ class TableControls extends React.PureComponent {
   @autobind
   deselectAll() {
     this.props.dispatch({ type: 'DROP_SELECTION' });
+  }
+
+  @autobind
+  addPlayer() {
+    const who = this.state.newPlayerName;
+    if (
+      who != null &&
+      who !== ''
+    ) {
+      const has = this.props.allPlayers.has(who);
+      if (!has) {
+        this.props.dispatch(setRating({
+          table: this.props.table,
+          who,
+          map: this.props.maps.types[0],
+          elo: defaultElo,
+        })).then(() => {
+          this.setState({ newPlayerName: null });
+        }, () => {
+          this.setState({ error: 'You need to set the password to edit the table.' });
+        });
+      } else {
+        this.setState({
+          error: `Cannot add player: ${JSON.stringify(who)}.\n` +
+                (has ? 'They are already in the table.' : ''),
+        });
+      }
+    }
   }
 
   oxfordCommaPlayers() {
@@ -82,6 +118,7 @@ class TableControls extends React.PureComponent {
         primary={false}
         size="small"
       >
+        {ErrorMaker.call(this)}
         {hasAuth ? null : [
           <hr key="auth-hr" />,
           <label key="auth-label" className={theme.label} htmlFor="table-password">
@@ -183,6 +220,21 @@ class TableControls extends React.PureComponent {
           })}
         />
         <hr />
+        <TextInput
+          className={theme.input}
+          placeHolder="New player name ..."
+          onDOMChange={(ev) => {
+            this.setState({ newPlayerName: ev.target.value });
+          }}
+        />
+        <Button
+          label="Add player"
+          onClick={(this.state.newPlayerName != null &&
+                    this.state.newPlayerName !== '') ?
+                   this.addPlayer :
+                   undefined}
+          primary
+        />
         <Button
           critical
           label="Delete selection"
@@ -205,13 +257,17 @@ class TableControls extends React.PureComponent {
 
 const noPlayers = [];
 export default connect(({
-  editor: { name, query },
+  editor: { name, query, table },
   players,
   maps,
   passwords,
 }) => ({
-  table: name,
+  table: name, // wew 1
+  allPlayers: table, // wew 2
   query,
+  // below is the selected players
+  // bad naming but hard to rename lol
+  // in future don't bother renaming crap from the redux store
   players: (ps => (ps ? ps.toArray() : noPlayers))(players.get(name)),
   password: passwords.get(name, { text: '', isSet: false }),
   maps,

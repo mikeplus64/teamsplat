@@ -3,7 +3,6 @@ import React from 'react';
 import { render } from 'react-dom';
 import { Provider } from 'react-redux';
 import { Router, Route, hashHistory } from 'react-router';
-import '../node_modules/grommet/scss/vanilla/index.scss';
 import App from './components/App.jsx';
 import Editor from './components/Editor.jsx';
 import Tables from './components/Tables.jsx';

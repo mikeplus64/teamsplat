@@ -66,7 +66,7 @@ export const setRating: (rating: Rating) => ThunkActionR<Promise<void>> =
         reject,
       );
     } else {
-      reject();
+      reject('no password given');
     }
   });
 
@@ -84,10 +84,10 @@ export const viewTable: (table: string) => ThunkActionR<Promise<Rating[]>> =
     });
 
 export const deletePlayers: (table: string, players: string[]) => ThunkActionR<Promise<any>> =
-  (table, players) => (dispatch, getState) => {
+  (table, players) => (dispatch, getState) => new Promise((resolve0, reject0) => {
     const password = getState().passwords.get(table);
     if (password != null && password.text && password.isSet) {
-      return Promise.all(players.map(player => new Promise((resolve, reject) =>
+      Promise.all(players.map(player => new Promise((resolve, reject) =>
         api.postDeleteByPasswordByTableByPlayer(
           password.text,
           table,
@@ -98,10 +98,10 @@ export const deletePlayers: (table: string, players: string[]) => ThunkActionR<P
             resolve();
           }),
           reject,
-        ))));
+        )))).then(resolve0, reject0);
     }
-    return Promise.reject();
-  };
+    reject0('no password given');
+  });
 
 export function startLoading(table: string): StartLoading {
   return { type: 'START_LOADING', table };
@@ -121,7 +121,7 @@ export const setTablePassword: (table: string) => ThunkActionR<Promise<any>> =
     if (password != null) {
       const { text, isSet } = password;
       if (isSet === true) {
-        reject();
+        reject('already set table password');
         return;
       }
       api.getSet_passwordByTableByPassword(
@@ -132,13 +132,13 @@ export const setTablePassword: (table: string) => ThunkActionR<Promise<any>> =
             dispatch({ type: 'SET_TABLE_PASSWORD', table });
             resolve();
           } else {
-            reject();
+            reject('was unable to set a password');
           }
         },
         reject,
       );
     } else {
-      reject();
+      reject('no password given');
     }
   });
 
