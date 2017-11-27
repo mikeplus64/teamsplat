@@ -1,5 +1,6 @@
 // @flow
 import React from 'react';
+import { any } from 'prop-types';
 import Grommet from 'grommet/components/App';
 import Anchor from 'grommet/components/Anchor';
 import Title from 'grommet/components/Title';
@@ -18,6 +19,11 @@ export default class App extends React.PureComponent {
     sidebar: ?React$Component<>,
   };
 
+  context: { router: any };
+  static contextTypes = {
+    router: any,
+  };
+
   content() {
     if (this.props.main) {
       return this.props.main;
@@ -31,17 +37,28 @@ export default class App extends React.PureComponent {
           src="https://www.youtube.com/embed/T0qagA4_eVQ"
         />
       </article>
-      <Footer key="credit" primary appCentered size="small">
-        <p>
-          By{' '}
-          <a href="mailto:mike@quasimal.com">mike</a> and{' '}
-          <a href="http://www.voobly.com/profile/view/124274399">voidhawk</a>
-        </p>
-      </Footer>
+      <p>
+        Available on <a href="https://github.com/mikeplus64/teamsplat">GitHub</a>.
+      </p>
+      <p>
+        By{' '}
+        <a href="mailto:mike@quasimal.com">mike</a> and{' '}
+        <a href="http://www.voobly.com/profile/view/124274399">voidhawk</a>
+      </p>
     </Box>);
   }
 
+  activeTable(): string | null {
+    const router = this.context.router;
+    const path = router.location.pathname;
+    if (path !== '/table/new' && path.startsWith('/table/')) {
+      return path;
+    }
+    return null;
+  }
+
   render() {
+    const active = this.activeTable();
     return (
       <Grommet>
         <Split flex="right">
@@ -54,9 +71,12 @@ export default class App extends React.PureComponent {
               </Title>
             </Header>
             <Menu primary size="small">
-              <Anchor path="/" label="Home" />
-              <Anchor path="/table" label="New table" />
+              <Anchor path={{ path: '/', index: true }} label="Home" />
+              <Anchor path="/table/new" label="New table" />
               <Anchor path="/tables" label="Tables" />
+              {active !== null ?
+                <Anchor path={active} label={decodeURIComponent(active.substr(7))} /> :
+                null}
               {this.props.sidebar}
             </Menu>
           </Sidebar>
