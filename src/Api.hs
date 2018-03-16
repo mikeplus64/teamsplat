@@ -29,14 +29,17 @@
 module Api where
 import           Conduit
 import           Control.Applicative
-import           Control.Lens                         (anyOf, to, _Just)
-import qualified Control.Lens                         as L
+import           Control.Lens                         (anyOf, firstOf, over, to,
+                                                       _Just, _head)
 import           Control.Monad                        (unless, void)
 import           Control.Monad.IO.Class               (liftIO)
 import           Control.Monad.Logger
+import           Control.Monad.Reader
 import qualified Data.Aeson.TH                        as JSON
 import           Data.Char
 import           Data.Int
+import           Data.List                            ((\\))
+import           Data.Maybe                           (fromMaybe)
 import           Data.Maybe
 import           Data.Proxy
 import           Data.Text                            (Text)
@@ -81,15 +84,15 @@ mapTypes =
 type Rate = (UTCTime, Word)
 
 data Rating = Rating
-  { ratingTable :: Text
-  , ratingWho   :: Text
-  , ratingDate  :: UTCTime
-  , ratingMap   :: Text
-  , ratingElo   :: Word
+  { ratingTable :: !Text
+  , ratingWho   :: !Text
+  , ratingDate  :: {-# UNPACK #-} !UTCTime
+  , ratingMap   :: !Text
+  , ratingElo   :: {-# UNPACK #-} !Word
   } deriving (Generic)
 
 JSON.deriveToJSON JSON.defaultOptions
-  { JSON.fieldLabelModifier = L.over L._head toLower . drop 6 }
+  { JSON.fieldLabelModifier = over _head toLower . drop 6 }
   ''Rating
 
 data AuthFailure
@@ -100,12 +103,23 @@ data AuthFailure
 JSON.deriveToJSON JSON.defaultOptions ''AuthFailure
 
 -- db shit
-share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
+share [mkPersist sqlSettings, mkMigrate "persistMigrateAll"] [persistLowerCase|
+DbVersion json
+  v Int
+  UniqueDbVersion v
+  deriving Show Eq
+
+TableDate json
+  table Text
+  created UTCTime
+  deriving Show Eq
+  UniqueDateTable table
+
 Password json
   table Text
   text PasswordText
   deriving Show Eq
-  UniquePassword table
+  UniquePasswordTable table
 
 Ratings json
   table Text
@@ -117,23 +131,72 @@ Ratings json
   deriving Show Eq
   |]
 
-deriving instance Generic (Key Ratings) -- ugly hack
-deriving instance Generic (Key Password) -- ugly hack
+deriving instance Generic (Key TableDate) -- ugly hack
+deriving instance Generic (Key DbVersion) -- ugly hack
+deriving instance Generic (Key Ratings) -- also an ugly hack
+deriving instance Generic (Key Password) -- another ugly hack
+
 type SqliteM = SqlPersistT (NoLoggingT (ResourceT IO))
+
+migrations :: [SqlPersistT IO ()]
+migrations =
+  [ do tables <- ReaderT $ \env ->
+         runResourceT (runNoLoggingT (runReaderT getAllTables env))
+       mapM_
+         (\t -> do
+           now <- liftIO getCurrentTime
+           insertUnique TableDate
+             { tableDateTable = t
+             , tableDateCreated = now
+             })
+         tables
+  ]
+
+version :: Int
+version = length migrations
+
+migrateVersions :: Migration
+migrateVersions = lift $ lift $ do
+  vs <- select $ from $ \dbv -> do
+    orderBy [desc (dbv^.DbVersionV)]
+    return (dbv^.DbVersionV)
+  let cur = fromMaybe 0 (firstOf (_head . to unValue) vs)
+  unless (cur == version) (sequence_ (drop cur migrations))
 
 {-# SPECIALISE pageSize :: Int #-}
 {-# SPECIALISE pageSize :: Int64 #-}
 pageSize :: Num a => a
 pageSize = 64
 
+copyTable :: Text -> Text -> PasswordText -> SqliteM Bool
+copyTable tblfrom tblto newpw = do
+  destTable <- select $ from $ \tbl ->
+    distinctOn [don (tbl^.RatingsTable)] $
+    where_ (tbl^.RatingsTable ==. val tblto)
+
+  case destTable of
+    [] -> do
+      True <- setTablePassword tblto newpw
+      insertMany_ . map (\r -> (entityVal r){ ratingsTable = tblto }) =<<
+        select (from (\rating -> rating <$
+          where_ (rating^.RatingsTable ==. val tblfrom)))
+      return True
+    _ ->
+      return False
+
 getTables :: Int64 -> SqliteM [Text]
-getTables page =
-  map unValue <$>
+getTables page = map unValue <$>
+  (select $ from $ \tbldate -> do
+      orderBy [desc (tbldate^.TableDateCreated)]
+      offset (pageSize * page)
+      limit pageSize
+      return (tbldate^.TableDateTable))
+
+getAllTables :: SqliteM [Text]
+getAllTables = map unValue <$>
   (select $ from $ \rating -> do
       orderBy [desc (rating^.RatingsTable)]
       groupBy (rating^.RatingsTable)
-      offset (pageSize * page)
-      limit pageSize
       return (rating^.RatingsTable))
 
 getRatings :: Text -> SqliteM [Rating]
@@ -182,10 +245,10 @@ withTableAuth :: Maybe PasswordText
               -> SqliteM (Either AuthFailure a)
 withTableAuth Nothing _table _f = return (Left NoPassword)
 withTableAuth (Just pw) table f = do
-  actualPw <- P.getBy (UniquePassword table)
+  actualPw <- P.getBy (UniquePasswordTable table)
   case actualPw of
     Just (Entity _ pass) | pw == passwordText pass -> Right <$> f
-    _ -> return (Left InvalidPassword)
+    _                                              -> return (Left InvalidPassword)
 
 setRatings :: PasswordText
            -> Text
@@ -225,9 +288,12 @@ setTablePassword table pass = do
     , passwordText = pass
     }
   case m of
-    Just _ -> return True
+    Just _ -> do
+      now <- liftIO getCurrentTime
+      Just _ <- P.insertUnique TableDate{tableDateTable = table, tableDateCreated = now}
+      return True
     Nothing -> do
-      ep <- P.getBy (UniquePassword table)
+      ep <- P.getBy (UniquePasswordTable table)
       case ep of
         Just Entity{entityVal = Password{passwordText}} ->
           return (pass == passwordText)
@@ -239,6 +305,11 @@ setTablePassword table pass = do
 
 type Api =
        "tables" :> Capture "page" Int64 :> Get '[JSON] [Text]
+  :<|> "copy"
+    :> Capture "from" Text
+    :> Capture "to" Text
+    :> Capture "password" PasswordText
+    :> Post '[JSON] Bool
   :<|> "players" :> Capture "page" Int64 :> Get '[JSON] [Text]
   :<|> "maps" :> Get '[JSON] [MapType]
   :<|> "rate"
@@ -273,13 +344,13 @@ api = Proxy
 server :: ConnectionPool -> Server Api
 server pool =
   sql . getTables
+  :<|> (\a b pw -> sql (copyTable a b pw))
   :<|> sql . getPlayers
   :<|> return mapTypes
   :<|> (\table player -> sql (ratingHistory table player))
-  :<|> (\pw table player maptype elo caveat -> do
+  :<|> (\pw table player maptype elo caveat ->
     sql (setRatings pw table player maptype elo caveat))
-  :<|> (\pw table player -> do
-    sql (deletePlayer pw table player))
+  :<|> (\pw table player -> sql (deletePlayer pw table player))
   :<|> sql . getRatings
   :<|> (\table password -> sql (setTablePassword table password))
   where
@@ -296,8 +367,9 @@ makeApplication dev params = do
     if dev
     then createSqlitePool "teamsplit.sqlite" 10
     else createPostgresqlPool (T.encodeUtf8 (makeConnStr params)) 10
-  runSqlPool (runMigration migrateAll) pool
-  return (serve api (server pool :<|> serveDirectory "dist"))
+  runSqlPool (runMigration persistMigrateAll) pool
+  runSqlPool (runMigration migrateVersions) pool
+  return (serve api (server pool :<|> serveDirectoryFileServer "dist"))
 
 {-# NOINLINE js #-}
 js :: Text

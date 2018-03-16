@@ -1,0 +1,102 @@
+-- This file has been generated from package.yaml by hpack version 0.20.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: ff3ef7204799dffdf4d486c39c3210059748d99a7cd6f6514dc63a52a9c8bb51
+
+name:           teamsplat
+version:        0.0.1
+synopsis:       Team splitter
+author:         Mike Ledger <mike@quasimal.com>
+license:        BSD3
+build-type:     Simple
+cabal-version:  >= 1.10
+
+library
+  hs-source-dirs:
+      src
+      src
+  ghc-options: -O2 -threaded -Wall
+  build-depends:
+      aeson
+    , base
+    , conduit
+    , esqueleto
+    , heroku
+    , lens
+    , monad-logger
+    , mtl
+    , persistent
+    , persistent-postgresql
+    , persistent-sqlite
+    , persistent-template
+    , servant
+    , servant-js
+    , servant-server
+    , text
+    , time
+    , wai-extra
+    , warp
+  exposed-modules:
+      Api
+  default-language: Haskell2010
+
+executable export
+  main-is: export.hs
+  hs-source-dirs:
+      src
+  ghc-options: -O2 -threaded -Wall
+  build-depends:
+      aeson
+    , base
+    , conduit
+    , esqueleto
+    , heroku
+    , lens
+    , monad-logger
+    , mtl
+    , persistent
+    , persistent-postgresql
+    , persistent-sqlite
+    , persistent-template
+    , servant
+    , servant-js
+    , servant-server
+    , text
+    , time
+    , wai-extra
+    , warp
+  other-modules:
+      Api
+      Paths_teamsplat
+  default-language: Haskell2010
+
+executable teamsplit
+  main-is: main.hs
+  hs-source-dirs:
+      src
+  ghc-options: -O2 -threaded -Wall
+  build-depends:
+      aeson
+    , base
+    , conduit
+    , esqueleto
+    , heroku
+    , lens
+    , monad-logger
+    , mtl
+    , persistent
+    , persistent-postgresql
+    , persistent-sqlite
+    , persistent-template
+    , servant
+    , servant-js
+    , servant-server
+    , text
+    , time
+    , wai-extra
+    , warp
+  other-modules:
+      Api
+      Paths_teamsplat
+  default-language: Haskell2010

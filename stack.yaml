@@ -1,5 +1,9 @@
-resolver: lts-8.5
+resolver: lts-11.0
 packages:
 - .
+- location:
+    git: git@github.com:bitemyapp/esqueleto.git
+    commit: 297f0238419963a386353c75e6fc555a43994ad1
+  extra-dep: true
 extra-deps:
 - heroku-0.1.2.3
