@@ -65,7 +65,7 @@ class Tables extends React.PureComponent {
           <ListItem
             key={table}
             onClick={() => {
-              this.props.router.push(`/table/${table}`);
+              this.props.router.push(`/table/${encodeURIComponent(table)}`);
             }}
           >
             {table}

@@ -1,7 +1,7 @@
 /* @flow */
 import { combination } from 'js-combinatorics';
 import { Set } from 'immutable';
-import type { Stats, Rating } from './types';
+import type { Rating } from './types';
 
 const makeStats: (ratings: Rating[]) => Team = (ratings: Rating[]) => {
   let total: number = 0;

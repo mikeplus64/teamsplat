@@ -51,7 +51,9 @@ export default class App extends React.PureComponent {
   activeTable(): string | null {
     const router = this.context.router;
     const path = router.location.pathname;
-    if (path !== '/table/new' && path.startsWith('/table/')) {
+    if (path !== '/table/new' &&
+        path !== '/table/copy' &&
+        path.startsWith('/table/')) {
       return path;
     }
     return null;
@@ -73,6 +75,7 @@ export default class App extends React.PureComponent {
             <Menu primary size="small">
               <Anchor path={{ path: '/', index: true }} label="Home" />
               <Anchor path="/table/new" label="New table" />
+              <Anchor path="/table/copy" label="Copy table" />
               <Anchor path="/tables" label="Tables" />
               {active !== null ?
                 <Anchor path={active} label={decodeURIComponent(active.substr(7))} /> :

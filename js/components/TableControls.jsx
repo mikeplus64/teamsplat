@@ -120,8 +120,7 @@ class TableControls extends React.PureComponent {
       >
         {ErrorMaker.call(this)}
         {hasAuth ? null : [
-          <hr key="auth-hr" />,
-          <label key="auth-label" className={theme.label} htmlFor="table-password">
+          <label className={theme.label} htmlFor="table-password">
             Shared table password
           </label>,
           <p key="auth-help"className={theme.help}>

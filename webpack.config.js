@@ -11,6 +11,7 @@ const ExtractCssPlugin = new ExtractTextPlugin({
 
 module.exports = (env) => {
   const production = env && env.production || false;
+  console.log('production', production);
   const css = (opts, modules, localIdentName) => Object.assign({
     test: /\.(css|scss|sass)$/,
     use: ExtractCssPlugin.extract([{
@@ -53,7 +54,7 @@ module.exports = (env) => {
       ],
     },
     plugins: [
-      new webpack.EnvironmentPlugin({
+      new webpack.DefinePlugin({
         'process.env': {
           NODE_ENV: JSON.stringify(production ? 'production' : 'development'),
         },

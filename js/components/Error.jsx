@@ -83,6 +83,13 @@ class Error extends React.PureComponent {
   }
 }
 
+export function error(that) {
+  return (<Error
+    display={that.state.error}
+    onClose={() => that.setState({ error: null })}
+  />);
+}
+
 export default function ErrorMaker() {
   return (<Error
     display={this.state.error}

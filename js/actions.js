@@ -142,8 +142,12 @@ export const setTablePassword: (table: string) => ThunkActionR<Promise<any>> =
     }
   });
 
-export function setPassword(table: string, password: string): SetPassword {
-  return { type: 'SET_PASSWORD', table, password };
+export function setPassword(
+  table: string,
+  password: string,
+  forceSet?: boolean,
+): SetPassword {
+  return { type: 'SET_PASSWORD', table, password, isSet: forceSet === true };
 }
 
 export function selectMap(map: string): SelectMap {

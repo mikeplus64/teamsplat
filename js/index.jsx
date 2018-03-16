@@ -9,6 +9,7 @@ import Editor from './components/Editor.jsx';
 import Tables from './components/Tables.jsx';
 import TableControls from './components/TableControls.jsx';
 import NewTable from './components/NewTable.jsx';
+import CopyTable from './components/CopyTable.jsx';
 import connect from './store';
 
 render(connect(store =>
@@ -17,6 +18,7 @@ render(connect(store =>
       <Route path="/" component={App}>
         <Route path="tables" components={Tables} />
         <Route path="table/new" component={NewTable} />
+        <Route path="table/copy" component={CopyTable} />
         <Route path="table/:name" components={{ sidebar: TableControls, main: Editor }} />
       </Route>
     </Router>

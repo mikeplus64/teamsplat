@@ -102,7 +102,7 @@ class NewTable extends React.PureComponent {
                 this.startImports(this.state.i);
               }
             }}
-            path={`/table/${this.state.i || 'new'}`}
+            path={`/table/${encodeURIComponent(this.state.i) || 'new'}`}
           />
         </Footer>
       </Form>

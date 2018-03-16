@@ -9,7 +9,7 @@ export default function maps(
   switch (action.type) {
     case 'SET_PASSWORD': return state.set(action.table, {
       text: action.password,
-      isSet: false,
+      isSet: action.isSet,
     });
 
     case 'SET_TABLE_PASSWORD': return state.update(

@@ -5,7 +5,7 @@ synopsis: Team splitter
 dependencies:
 - base
 - aeson
-- conduit-combinators
+- conduit
 - esqueleto
 - text
 - time
