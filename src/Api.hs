@@ -173,7 +173,6 @@ copyTable tblfrom tblto newpw = do
   destTable <- select $ from $ \tbl -> distinct $ do
     where_ (tbl^.RatingsTable ==. val tblto)
     return (tbl^.RatingsTable)
-
   case destTable of
     [] -> do
       True <- setTablePassword tblto newpw
